@@ -4,19 +4,24 @@
 \alias{isContaminant}
 \title{Identify contaminant sequences.}
 \usage{
-isContaminant(seqtab, conc, threshold = 0.001, normalize = TRUE,
-  detailed = FALSE)
+isContaminant(seqtab, conc = NULL, neg = NULL, method = "frequency",
+  threshold = 0.01, normalize = TRUE, detailed = FALSE)
 }
 \arguments{
 \item{seqtab}{(Required). Integer matrix.
 A feature table recording the observed abundances of each sequence (or OTU) in each sample.
 Rows should correspond to samples, and columns to sequences (or OTUs).}
 
-\item{conc}{(Required). \code{numeric}.
+\item{conc}{(Optional). \code{numeric}.
 A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
-All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.}
+All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
+REQUIRED if performing frequency-based testing.}
 
-\item{threshold}{(Optional). Default \code{1e-3}.
+\item{neg}{(Optional). \code{logical}
+The negative control samples. Extraction controls give the best results.
+REQUIRED if performing prevalence-based testing.}
+
+\item{threshold}{(Optional). Default \code{1e-2}.
 The p-value threshold at which the null-hypothesis (not a contaminant) should be rejected in favor of the
 alternate hypothesis (contaminant).}
 
@@ -27,6 +32,12 @@ If FALSE, no normalization is performed (the data should already be frequencies 
 \item{detailed}{(Optional). Default FALSE.
 If TRUE, the return value is a \code{data.frame} containing diagnostic information on the contaminant decision.
 If FALSE, the return value is a \code{logical} vector containing the contaminant decisions.}
+
+\item{method(Optional).}{Default "frequency".
+The method used to test for contaminants.
+frequency: Contaminants are identified by increased frequency in lower biomass samples.
+prevalence: Contaminants are identified by increased prevalence in negative controls.
+combined: Both frequency and prevalence are used to identify contaminants.}
 }
 \value{
 If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
@@ -37,6 +48,6 @@ The frequency of each sequence (or OTU) in the input feature table as a function
 amplified DNA in each sample is used to identify contaminant sequences.
 }
 \examples{
-filterAndTrim(testFastqs, filtFastqs, truncQ=2, truncLen=200, rm.phix=TRUE)
+isContaminant(st, conc, threshold=0.05)
 
 }
