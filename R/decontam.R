@@ -57,12 +57,19 @@ isContaminant <- function(seqtab, conc, threshold = 1e-3, normalize=TRUE, detail
 isContaminantSingle <- function(freq, conc) {
   df <- data.frame(logc=log(conc), logf=log(freq))
   df <- df[freq>0,]
-  lm1 <- lm(logf~offset(-1*logc), data=df)
-  SS1 <- sum(lm1$residuals^2)
-  lm0 <- lm(logf~1, data=df)
-  SS0 <- sum(lm0$residuals^2)
-  dof <- sum(freq>0)-1
-  pval <- pf(SS1/SS0,dof,dof)
+  if(sum(freq>0)>1) {
+    lm1 <- lm(logf~offset(-1*logc), data=df)
+    SS1 <- sum(lm1$residuals^2)
+    lm0 <- lm(logf~1, data=df)
+    SS0 <- sum(lm0$residuals^2)
+    dof <- sum(freq>0)-1
+    pval <- pf(SS1/SS0,dof,dof)
+  } else {
+    SS1 <- NA
+    SS0 <- NA
+    dof <- NA
+    pval <- 1
+  }
   return(c(SS0, SS1, dof, pval))
 }
 
