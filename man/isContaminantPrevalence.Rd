@@ -4,7 +4,7 @@
 \alias{isContaminantPrevalence}
 \title{importFrom stats chisq.test}
 \usage{
-isContaminantPrevalence(freq, neg)
+isContaminantPrevalence(freq, neg, method = "auto")
 }
 \description{
 importFrom stats chisq.test
