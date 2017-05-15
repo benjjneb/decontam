@@ -2,10 +2,12 @@
 % Please edit documentation in R/decontam.R
 \name{isContaminantPrevalence}
 \alias{isContaminantPrevalence}
-\title{importFrom stats chisq.test}
+\title{importFrom stats chisq.test
+importFrom stats fisher.test}
 \usage{
 isContaminantPrevalence(freq, neg, method = "auto")
 }
 \description{
 importFrom stats chisq.test
+importFrom stats fisher.test
 }

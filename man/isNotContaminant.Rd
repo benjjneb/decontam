@@ -5,7 +5,7 @@
 \title{Identify non-contaminant sequences. This is the inverse function of \code{\link{isContaminant}}.}
 \usage{
 isNotContaminant(seqtab, conc = NULL, neg = NULL, method = "frequency",
-  threshold = 0.01, normalize = TRUE, detailed = FALSE)
+  threshold = 0.5, normalize = TRUE, detailed = FALSE)
 }
 \arguments{
 \item{seqtab}{(Required). Integer matrix.

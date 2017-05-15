@@ -5,7 +5,7 @@
 \title{Identify contaminant sequences.}
 \usage{
 isContaminant(seqtab, conc = NULL, neg = NULL, method = "frequency",
-  threshold = 0.01, normalize = TRUE, detailed = FALSE)
+  threshold = 0.1, normalize = TRUE, detailed = FALSE)
 }
 \arguments{
 \item{seqtab}{(Required). Integer matrix.
@@ -21,7 +21,7 @@ REQUIRED if performing frequency-based testing.}
 The negative control samples. Extraction controls give the best results.
 REQUIRED if performing prevalence-based testing.}
 
-\item{threshold}{(Optional). Default \code{1e-2}.
+\item{threshold}{(Optional). Default \code{0.1}.
 The p-value threshold at which the null-hypothesis (not a contaminant) should be rejected in favor of the
 alternate hypothesis (contaminant).}
 
@@ -40,15 +40,14 @@ prevalence: Contaminants are identified by increased prevalence in negative cont
 combined: Both frequency and prevalence are used to identify contaminants.}
 }
 \value{
-If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants. NA is returned when
-   the OTU/SV is present in less than 2 samples.
-If \code{detailed=TRUE} a \code{data.frame} is returned instead.
+If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
+If \code{detailed=TRUE} a \code{data.frame} with additional information (such as the p-value) is returned.
 }
 \description{
 The frequency of each sequence (or OTU) in the input feature table as a function of the concentration of
 amplified DNA in each sample is used to identify contaminant sequences.
 }
 \examples{
-isContaminant(st, conc, threshold=0.05)
+isContaminant(st, conc, threshold=0.2)
 
 }

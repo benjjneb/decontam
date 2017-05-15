@@ -3,5 +3,6 @@
 export(isContaminant)
 export(isContaminantFrequency)
 export(isContaminantPrevalence)
+export(isNotContaminant)
 importFrom(methods,as)
 importFrom(methods,is)

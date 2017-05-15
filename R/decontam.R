@@ -22,7 +22,7 @@
 #' prevalence: Contaminants are identified by increased prevalence in negative controls.
 #' combined: Both frequency and prevalence are used to identify contaminants.
 #'
-#' @param threshold (Optional). Default \code{1e-2}.
+#' @param threshold (Optional). Default \code{0.1}.
 #' The p-value threshold at which the null-hypothesis (not a contaminant) should be rejected in favor of the
 #' alternate hypothesis (contaminant).
 #'
@@ -35,9 +35,8 @@
 #' If FALSE, the return value is a \code{logical} vector containing the contaminant decisions.
 #'
 #' @return
-#' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants. NA is returned when
-#'    the OTU/SV is present in less than 2 samples.
-#' If \code{detailed=TRUE} a \code{data.frame} is returned instead.
+#' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
+#' If \code{detailed=TRUE} a \code{data.frame} with additional information (such as the p-value) is returned.
 #'
 #' @importFrom methods as
 #' @importFrom methods is
@@ -45,9 +44,9 @@
 #' @export
 #'
 #' @examples
-#' isContaminant(st, conc, threshold=0.05)
+#' isContaminant(st, conc, threshold=0.2)
 #'
-isContaminant <- function(seqtab, conc=NULL, neg=NULL, method="frequency", threshold = 1e-2, normalize=TRUE, detailed=FALSE) {
+isContaminant <- function(seqtab, conc=NULL, neg=NULL, method="frequency", threshold = 0.1, normalize=TRUE, detailed=FALSE) {
   # Validate input
   if(!(is(seqtab, "matrix") && is.numeric(seqtab))) stop("seqtab must be a numeric matrix.")
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
@@ -71,10 +70,10 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method="frequency", thres
   else { pval <- pchisq(-2*log(p.freq * p.prev), df=4, lower.tail=FALSE) }
   # Make contaminant calls ( ALLOW LENGTH 2 THRESH FOR COMBINED METHOD? )
   isC <- (pval < threshold)
-##  isC[is.na(isC)] <- FALSE # NA pvals are not called contaminants ###!??? Then can't flip the pval (i.e. 1-p)
+  isC[is.na(isC)] <- FALSE # NA pvals are not called contaminants
   # Make return value
   if(detailed) {
-    rval <- data.frame(freq=apply(seqtab,2,mean), prev=apply(seqtab>0,2,sum),p.freq=p.freq, p.prev=p.prev, pval=pval, contaminant=isC)
+    rval <- data.frame(freq=apply(seqtab,2,mean), prev=apply(seqtab>0,2,sum), p.freq=p.freq, p.prev=p.prev, pval=pval, contaminant=isC)
   } else {
     rval <- isC
   }
@@ -101,20 +100,29 @@ isContaminantFrequency <- function(freq, conc) {
   return(pval)
 }
 #' importFrom stats chisq.test
+#' importFrom stats fisher.test
 #'
 #' @export
 #'
 ### @keywords internal
 isContaminantPrevalence <- function(freq, neg, method="auto") {
+  fisher.pval <- function(tab, alternative) {
+    excess <- fisher.test(tab, alternative="greater")$p.value + fisher.test(tab, alternative="less")$p.value - 1
+    pval <- fisher.test(tab, alternative=alternative)$p.value
+    pval <- pval - excess/2
+    pval
+  }
   if(sum(freq>0)>1 && sum(neg) > 0 && sum(neg) < length(neg)) {
     tab <- table(factor(neg, levels=c(TRUE, FALSE)), factor(freq>0, levels=c(TRUE, FALSE)))
     # First entry (1,1) is the neg prevalence, so alternative is "greater"
-    if(method == "fisher") {
-      pval <- fisher.test(tab, alternative="greater")$p.value
+    if((tab[1,2] + tab[2,2]) == 0) { # Present in all samples
+      pval <- 0.5
+    } else if(method == "fisher") {
+      pval <- fisher.pval(tab, alternative="greater")
     } else if(method == "chisq") {
       pval <- prop.test(tab, alternative="greater")$p.value
     } else {
-      pval <- tryCatch(prop.test(tab, alternative="greater"), warning=function(w) fisher.test(tab, alternative="greater"))$p.value
+      pval <- tryCatch(prop.test(tab, alternative="greater")$p.value, warning=function(w) fisher.pval(tab, alternative="greater"))
     }
     if(is.na(pval)) {
       warning("NA p-value calculated.")
@@ -175,44 +183,30 @@ isContaminantPrevalence <- function(freq, neg, method="auto") {
 #' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating non-contaminants.
 #' If \code{detailed=TRUE} a \code{data.frame} is returned instead.
 #'
-#' @importFrom methods as
-#' @importFrom methods is
-#'
-## @export
-## Not sure about this being the right approach yet.
+#' @export
 #'
 #' @examples
 #' isNotContaminant(st, conc, threshold=0.05)
 #'
-isNotContaminant <- function(seqtab, conc=NULL, neg=NULL, method="frequency", threshold = 1e-2, normalize=TRUE, detailed=FALSE) {
-  # Validate input
-  if(!(is(seqtab, "matrix") && is.numeric(seqtab))) stop("seqtab must be a numeric matrix.")
-  if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
-  if(!method %in% c("frequency", "prevalence", "combined")) stop("Valid method arguments: frequency, prevalence, combined")
-  do.freq <- FALSE; do.prev <- FALSE; p.freq <- NA; p.prev <- NA
-  if(method %in% c("frequency", "combined")) do.freq <- TRUE
-  if(method %in% c("prevalence", "combined")) do.prev <- TRUE
-  # Calculate frequency p-value ###! Doing 1-pval
-  if(do.freq) {
-    if(!(is.numeric(conc) && all(conc>0))) stop("conc must be a positive numeric vector.")
-    if(nrow(seqtab) != length(conc)) stop("The length of conc must match the number of samples (the rows of seqtab).")
-    p.freq <- 1-apply(seqtab, 2, isContaminantFrequency, conc=conc)
-  }
-  # Calculate prevalence p-value ###! Inverting neg here
-  if(do.prev) {
-    p.prev <- apply(seqtab, 2, isContaminantPrevalence, neg=!neg)
-  }
+isNotContaminant <- function(seqtab, conc=NULL, neg=NULL, method="frequency", threshold = 0.5, normalize=TRUE, detailed=FALSE) {
+  df <- isContaminant(seqtab, conc=conc, neg=neg, method=method, threshold=threshold, normalize=normalize, detailed=TRUE)
+  df$p.freq <- 1-df$p.freq
+  df$p.prev <- 1-df$p.prev
   # Calculate overall p-value
-  if(method=="frequency") { pval <- p.freq }
-  else if(method=="prevalence") { pval <- p.prev }
-  else { pval <- pchisq(-2*log(p.freq * p.prev), df=4, lower.tail=FALSE) }
+  if(method=="frequency") { pval <- df$p.freq }
+  else if(method=="prevalence") { pval <- df$p.prev }
+  else { pval <- pchisq(-2*log(df$p.freq * df$p.prev), df=4, lower.tail=FALSE) }
   # Make contaminant calls ( ALLOW LENGTH 2 THRESH FOR COMBINED METHOD? )
-  isC <- (pval < threshold)
+  isNotC <- (pval < threshold)
+  isNotC[is.na(isNotC)] <- FALSE # NA pvals are not called not-contaminants
+  df$pval <- pval
+  df$contaminant <- NULL
+  df$not.contaminant <- isNotC
   # Make return value
   if(detailed) {
-    rval <- data.frame(freq=apply(seqtab,2,mean), prev=apply(seqtab>0,2,sum),p.freq=p.freq, p.prev=p.prev, pval=pval, contaminant=isC)
+    rval <- df
   } else {
-    rval <- isC
+    rval <- isNotC
   }
   return(rval)
 }
