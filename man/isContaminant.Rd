@@ -8,18 +8,23 @@ isContaminant(seqtab, conc = NULL, neg = NULL, method = "frequency",
   threshold = 0.1, normalize = TRUE, detailed = FALSE)
 }
 \arguments{
-\item{seqtab}{(Required). Integer matrix.
-A feature table recording the observed abundances of each sequence (or OTU) in each sample.
-Rows should correspond to samples, and columns to sequences (or OTUs).}
+\item{seqtab}{(Required). Integer matrix or phyloseq object.
+A feature table recording the observed abundances of each sequence variant (or OTU) in each sample.
+Rows should correspond to samples, and columns to sequences (or OTUs).
+If a phyloseq object is provided, the otu-table component will be extracted.}
 
 \item{conc}{(Optional). \code{numeric}.
 A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
 All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
-REQUIRED if performing frequency-based testing.}
+REQUIRED if performing frequency-based testing.
+If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
+phyloseq object can be provided.}
 
 \item{neg}{(Optional). \code{logical}
 The negative control samples. Extraction controls give the best results.
-REQUIRED if performing prevalence-based testing.}
+REQUIRED if performing prevalence-based testing.
+If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
+phyloseq object can be provided.}
 
 \item{threshold}{(Optional). Default \code{0.1}.
 The p-value threshold at which the null-hypothesis (not a contaminant) should be rejected in favor of the

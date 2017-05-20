@@ -3,18 +3,23 @@
 #' The frequency of each sequence (or OTU) in the input feature table as a function of the concentration of
 #' amplified DNA in each sample is used to identify contaminant sequences.
 #'
-#' @param seqtab (Required). Integer matrix.
-#' A feature table recording the observed abundances of each sequence (or OTU) in each sample.
+#' @param seqtab (Required). Integer matrix or phyloseq object.
+#' A feature table recording the observed abundances of each sequence variant (or OTU) in each sample.
 #' Rows should correspond to samples, and columns to sequences (or OTUs).
+#' If a phyloseq object is provided, the otu-table component will be extracted.
 #'
 #' @param conc (Optional). \code{numeric}.
 #' A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
 #' All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
 #' REQUIRED if performing frequency-based testing.
+#' If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
+#' phyloseq object can be provided.
 #'
 #' @param neg (Optional). \code{logical}
 #' The negative control samples. Extraction controls give the best results.
 #' REQUIRED if performing prevalence-based testing.
+#' If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
+#' phyloseq object can be provided.
 #'
 #' @param method(Optional). Default "frequency".
 #' The method used to test for contaminants.
@@ -48,6 +53,21 @@
 #'
 isContaminant <- function(seqtab, conc=NULL, neg=NULL, method="frequency", threshold = 0.1, normalize=TRUE, detailed=FALSE) {
   # Validate input
+  if(is(seqtab, "phyloseq")) {
+    ps <- seqtab
+    seqtab <- as(ps@otu_table, "matrix")
+    if(ps@otu_table@taxa_are_rows) { seqtab <- t(seqtab) }
+    if(is.character(conc)) {
+      i <- match(conc, pstm@sam_data@names)
+      if(is.na(i)) stop(paste(conc, "is not a valid sample-variable in the provided phyloseq object."))
+      conc <- ps@sam_data@.Data[[i]]
+    }
+    if(is.character(neg)) {
+      i <- match(neg, pstm@sam_data@names)
+      if(is.na(i)) stop(paste(neg, "is not a valid sample-variable in the provided phyloseq object."))
+      neg <- ps@sam_data@.Data[[i]]
+    }
+  }
   if(!(is(seqtab, "matrix") && is.numeric(seqtab))) stop("seqtab must be a numeric matrix.")
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
   if(!method %in% c("frequency", "prevalence", "combined")) stop("Valid method arguments: frequency, prevalence, combined")
