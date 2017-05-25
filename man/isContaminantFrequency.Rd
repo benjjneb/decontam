@@ -9,3 +9,4 @@ isContaminantFrequency(freq, conc)
 \description{
 importFrom stats lm
 }
+\keyword{internal}

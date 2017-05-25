@@ -1,8 +1,8 @@
 Package: decontam
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.4
-Author: Who wrote it
+Title: Identify Contaminants in Microbiome Sequence Data
+Version: 0.1.5
+Author: BJC, NMD
 Maintainer: Benjamin Callahan <benjamin.j.callahan@gmail.com>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.

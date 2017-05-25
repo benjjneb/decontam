@@ -4,31 +4,42 @@
 \alias{isContaminant}
 \title{Identify contaminant sequences.}
 \usage{
-isContaminant(seqtab, conc = NULL, neg = NULL, method = "frequency",
+isContaminant(seqtab, conc = NULL, neg = NULL, method = NULL,
   threshold = 0.1, normalize = TRUE, detailed = FALSE)
 }
 \arguments{
-\item{seqtab}{(Required). Integer matrix or phyloseq object.
+\item{seqtab}{(Required). \code{Integer matrix} or \code{phyloseq} object.
 A feature table recording the observed abundances of each sequence variant (or OTU) in each sample.
 Rows should correspond to samples, and columns to sequences (or OTUs).
 If a phyloseq object is provided, the otu-table component will be extracted.}
 
-\item{conc}{(Optional). \code{numeric}.
+\item{conc}{(Optional). \code{numeric}. Required if performing frequency-based testing.
 A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
 All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
-REQUIRED if performing frequency-based testing.
 If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
 phyloseq object can be provided.}
 
-\item{neg}{(Optional). \code{logical}
-The negative control samples. Extraction controls give the best results.
-REQUIRED if performing prevalence-based testing.
-If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
+\item{neg}{(Optional). \code{logical}. Required if performing prevalence-based testing.
+TRUE if sample is a negative control, and FALSE if not (NA entries are not included in the testing).
+Extraction controls give the best results.
+If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
 phyloseq object can be provided.}
+
+\item{method}{(Optional). \code{character}. The method used to test for contaminants.
+\describe{
+  \item{frequency}{Contaminants are identified by increased frequency in lower biomass samples.}
+  \item{prevalence}{Contaminants are identified by increased prevalence in negative controls.}
+  \item{combined}{The combined frequency and prevalence p-value (Fisher's method) is used to identify contaminants.}
+  \item{minimum}{The minimum of the frequency and prevalence p-values is used to identify contaminants.}
+  \item{independent}{The frequency and prevalence p-values are used independently to identify contaminants.}
+}
+If \code{method} is not specified, frequency, prevalence or combined will be automatically selected based on
+whether just \code{conc}, just \code{neg}, or both were provided.}
 
 \item{threshold}{(Optional). Default \code{0.1}.
-The p-value threshold at which the null-hypothesis (not a contaminant) should be rejected in favor of the
-alternate hypothesis (contaminant).}
+The p-value threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
+alternate hypothesis (contaminant). A length-two vector can be provided when using the independent method:
+the first value is the threshold for the frequency test and the second for the prevalence test.}
 
 \item{normalize}{(Optional). Default TRUE.
 If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
@@ -37,12 +48,6 @@ If FALSE, no normalization is performed (the data should already be frequencies 
 \item{detailed}{(Optional). Default FALSE.
 If TRUE, the return value is a \code{data.frame} containing diagnostic information on the contaminant decision.
 If FALSE, the return value is a \code{logical} vector containing the contaminant decisions.}
-
-\item{method(Optional).}{Default "frequency".
-The method used to test for contaminants.
-frequency: Contaminants are identified by increased frequency in lower biomass samples.
-prevalence: Contaminants are identified by increased prevalence in negative controls.
-combined: Both frequency and prevalence are used to identify contaminants.}
 }
 \value{
 If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
@@ -53,6 +58,7 @@ The frequency of each sequence (or OTU) in the input feature table as a function
 amplified DNA in each sample is used to identify contaminant sequences.
 }
 \examples{
-isContaminant(st, conc, threshold=0.2)
+isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
+isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="minimum", threshold=0.1)
 
 }

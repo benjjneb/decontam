@@ -2,7 +2,7 @@
 % Please edit documentation in R/decontam.R
 \name{isNotContaminant}
 \alias{isNotContaminant}
-\title{Identify non-contaminant sequences. This is the inverse function of \code{\link{isContaminant}}.}
+\title{Identify non-contaminant sequences.}
 \usage{
 isNotContaminant(seqtab, conc = NULL, neg = NULL, method = "frequency",
   threshold = 0.5, normalize = TRUE, detailed = FALSE)
@@ -22,7 +22,7 @@ The negative control samples. Extraction controls give the best results.
 REQUIRED if performing prevalence-based testing.}
 
 \item{threshold}{(Optional). Default \code{0.5}.
-The p-value threshold at which the null-hypothesis (a contaminant) should be rejected in favor of the
+The p-value threshold below which (strictly less than) the null-hypothesis (a contaminant) should be rejected in favor of the
 alternate hypothesis (not a contaminant).}
 
 \item{normalize}{(Optional). Default TRUE.
@@ -44,8 +44,8 @@ If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicati
 If \code{detailed=TRUE} a \code{data.frame} is returned instead.
 }
 \description{
-The frequency of each sequence (or OTU) in the input feature table as a function of the concentration of
-amplified DNA in each sample is used to identify non-contaminant sequences. Note that the null hypothesis
+The prevalence of each sequence (or OTU) in the input feature table across samples and negative controls
+is used to identify non-contaminant sequences. Note that the null hypothesis
 here is that sequences **are** contaminants. This function is intended for use on low-biomass samples
 in which a large proportion of the sequences are likely to be contaminants.
 }

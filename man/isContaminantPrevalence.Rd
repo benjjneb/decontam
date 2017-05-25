@@ -11,3 +11,4 @@ isContaminantPrevalence(freq, neg, method = "auto")
 importFrom stats chisq.test
 importFrom stats fisher.test
 }
+\keyword{internal}
