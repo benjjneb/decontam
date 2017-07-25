@@ -5,7 +5,8 @@
 \title{Identify contaminant sequences.}
 \usage{
 isContaminant(seqtab, conc = NULL, neg = NULL, method = NULL,
-  threshold = 0.1, normalize = TRUE, detailed = FALSE)
+  batch = NULL, batch.combine = "minimum", threshold = 0.1,
+  normalize = TRUE, detailed = FALSE)
 }
 \arguments{
 \item{seqtab}{(Required). \code{Integer matrix} or \code{phyloseq} object.
@@ -35,6 +36,19 @@ phyloseq object can be provided.}
 }
 If \code{method} is not specified, frequency, prevalence or combined will be automatically selected based on
 whether just \code{conc}, just \code{neg}, or both were provided.}
+
+\item{batch}{(Optional). \code{factor}, or any type coercible to a \code{factor}. Default NULL.
+If provided, should be a vector of length equal to the number of input samples which specifies which batch
+each sample belongs to (eg. sequencing run). Contaminants identification will be performed independently
+within each batch.
+If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
+phyloseq object can be provided.}
+
+\item{batch.combine}{(Optional). Default "minimum".
+For each input sequence variant (or OTU) the p-values in each batch are combined into a single p-value that is then
+compared to the `code{threshold}` in order to call contaminants. Valid values: "minimum", "product", "fisher".
+
+The "frequency" and "prevalence" p-values are combined across batches independently if both are used.}
 
 \item{threshold}{(Optional). Default \code{0.1}.
 The p-value threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the

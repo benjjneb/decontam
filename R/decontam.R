@@ -31,6 +31,20 @@
 #' If \code{method} is not specified, frequency, prevalence or combined will be automatically selected based on
 #' whether just \code{conc}, just \code{neg}, or both were provided.
 #'
+#' @param batch (Optional). \code{factor}, or any type coercible to a \code{factor}. Default NULL.
+#' If provided, should be a vector of length equal to the number of input samples which specifies which batch
+#' each sample belongs to (eg. sequencing run). Contaminants identification will be performed independently
+#' within each batch.
+#' If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
+#' phyloseq object can be provided.
+#'
+#'
+#' @param batch.combine (Optional). Default "minimum".
+#' For each input sequence variant (or OTU) the p-values in each batch are combined into a single p-value that is then
+#' compared to the `code{threshold}` in order to call contaminants. Valid values: "minimum", "product", "fisher".
+#'
+#' The "frequency" and "prevalence" p-values are combined across batches independently if both are used.
+#'
 #' @param threshold (Optional). Default \code{0.1}.
 #' The p-value threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
 #' alternate hypothesis (contaminant). A length-two vector can be provided when using the independent method:
@@ -57,21 +71,26 @@
 #' isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
 #' isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="minimum", threshold=0.1)
 #'
-isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, threshold = 0.1, normalize=TRUE, detailed=FALSE) {
+isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, batch.combine="minimum", threshold = 0.1, normalize=TRUE, detailed=FALSE) {
   # Validate input
   if(is(seqtab, "phyloseq")) {
     ps <- seqtab
     seqtab <- as(ps@otu_table, "matrix")
     if(ps@otu_table@taxa_are_rows) { seqtab <- t(seqtab) }
-    if(is.character(conc)) {
+    if(is.character(conc) && length(conc)==1) {
       i <- match(conc, ps@sam_data@names)
       if(is.na(i)) stop(paste(conc, "is not a valid sample-variable in the provided phyloseq object."))
       conc <- ps@sam_data@.Data[[i]]
     }
-    if(is.character(neg)) {
+    if(is.character(neg) && length(neg)==1) {
       i <- match(neg, ps@sam_data@names)
       if(is.na(i)) stop(paste(neg, "is not a valid sample-variable in the provided phyloseq object."))
       neg <- ps@sam_data@.Data[[i]]
+    }
+    if(is.character(batch) && length(batch)==1) {
+      i <- match(batch, ps@sam_data@names)
+      if(is.na(i)) stop(paste(batch, "is not a valid sample-variable in the provided phyloseq object."))
+      batch <- ps@sam_data@.Data[[i]]
     }
   }
   if(!(is(seqtab, "matrix") && is.numeric(seqtab))) stop("seqtab must be a numeric matrix.")
@@ -85,6 +104,14 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, threshold = 
     stop("Valid method arguments: frequency, prevalence, combined, minimum, independent")
   }
   do.freq <- FALSE; do.prev <- FALSE; p.freq <- NA; p.prev <- NA
+  if(do.freq) {
+    if(missing(conc)) stop("conc must be provided to perform frequency-based contaminant identification.")
+    if(!(is.numeric(conc) && all(conc>0))) stop("conc must be a positive numeric vector.")
+    if(nrow(seqtab) != length(conc)) stop("The length of conc must match the number of samples (the rows of seqtab).")
+  }
+  if(do.prev) {
+    if(missing(neg)) stop("neg must be provided to perform prevalence-based contaminant identification.")
+  }
   if(method %in% c("frequency", "minimum", "combined", "minimum", "independent")) do.freq <- TRUE
   if(method %in% c("prevalence", "combined", "minimum", "independent")) do.prev <- TRUE
   if(is.numeric(threshold) && all(threshold >= 0) && all(threshold <= 1)) {
@@ -99,17 +126,53 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, threshold = 
   } else {
     stop("threshold must be a numeric value from 0 to 1 (inclusive).")
   }
-  # Calculate frequency p-value
-  if(do.freq) {
-    if(missing(conc)) stop("conc must be provided to perform frequency-based contaminant identification.")
-    if(!(is.numeric(conc) && all(conc>0))) stop("conc must be a positive numeric vector.")
-    if(nrow(seqtab) != length(conc)) stop("The length of conc must match the number of samples (the rows of seqtab).")
-    p.freq <- apply(seqtab, 2, isContaminantFrequency, conc=conc)
+  if(missing(batch) || is.null(batch)) {
+    batch <- factor(rep(1, nrow(seqtab)))
   }
-  # Calculate prevalence p-value
-  if(do.prev) {
-    if(missing(neg)) stop("neg must be provided to perform prevalence-based contaminant identification.")
-    p.prev <- apply(seqtab, 2, isContaminantPrevalence, neg=neg)
+  if(nrow(seqtab) != length(batch)) stop("The length of batch must match the number of samples (the rows of seqtab).")
+  if(!batch.combine %in% c("minimum", "product", "fisher")) stop("Invalid batch.combine value.")
+  batch <- factor(batch)
+  # Loop over batches
+  p.freqs <- matrix(NA, nrow=nlevels(batch), ncol=ncol(seqtab))
+  rownames(p.freqs) <- levels(batch)
+  p.prevs <- matrix(NA, nrow=nlevels(batch), ncol=ncol(seqtab))
+  rownames(p.prevs) <- levels(batch)
+  for(bat in levels(batch)) {
+    # Calculate frequency p-value
+    if(do.freq) {
+      p.freqs[bat,] <- apply(seqtab[batch==bat,], 2, isContaminantFrequency, conc=conc[batch==bat])
+    }
+    # Calculate prevalence p-value
+    if(do.prev) {
+      p.prevs[bat,] <- apply(seqtab[batch==bat,], 2, isContaminantPrevalence, neg=neg[batch==bat])
+    }
+  }
+  # Combine batch p-values
+  if(batch.combine == "minimum") {
+    if(do.freq) {
+      suppressWarnings(p.freq <- apply(p.freqs, 2, min, na.rm=TRUE))
+      p.freq[is.infinite(p.freq)] <- NA # If NA in all batches, min sets to infinite
+    }
+    if(do.prev) {
+      suppressWarnings(p.prev <- apply(p.prevs, 2, min, na.rm=TRUE))
+      p.prev[is.infinite(p.prev)] <- NA # If NA in all batches, min sets to infinite
+    }
+  } else if(batch.combine == "product") {
+    if(do.freq) {
+      suppressWarnings(p.freq <- apply(p.freqs, 2, prod, na.rm=TRUE))
+    }
+    if(do.prev) {
+      suppressWarnings(p.prev <- apply(p.prevs, 2, prod, na.rm=TRUE))
+    }
+  } else if(batch.combine == "fisher") {
+    if(do.freq) {
+      p.freq <- apply(p.freqs, 2, fish.combine, na.replace=0.5)
+    }
+    if(do.prev) {
+      p.prev <- apply(p.prevs, 2, fish.combine, na.replace=0.5)
+    }
+  } else {
+    stop("Invalid batch.combine value.")
   }
   # Calculate overall p-value
   if(method=="frequency") { pval <- p.freq }
@@ -263,4 +326,17 @@ isNotContaminant <- function(seqtab, conc=NULL, neg=NULL, method="frequency", th
     rval <- isNotC
   }
   return(rval)
+}
+
+list_along <- function(nm) {
+  if(!is.character(nm)) stop("list_along requires character input.")
+  rval <- vector("list", length(nm))
+  names(rval) <- nm
+}
+
+fish.combine <- function(vec, na.replace=0.5) {
+  vec[is.na(vec)] <- na.replace
+  if(any(vec<0 | vec>1)) stop("fish.combine expects p-values between 0 and 1.")
+  p <- prod(vec)
+  pchisq(-2*log(p), df=2*length(vec), lower.tail=FALSE)
 }
