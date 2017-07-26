@@ -72,7 +72,8 @@ The frequency of each sequence (or OTU) in the input feature table as a function
 amplified DNA in each sample is used to identify contaminant sequences.
 }
 \examples{
-isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
-isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="minimum", threshold=0.1)
-
+\dontrun{
+  isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
+  isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="minimum", threshold=0.1)
+}
 }

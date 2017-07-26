@@ -68,30 +68,19 @@
 #' @export
 #'
 #' @examples
-#' isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
-#' isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="minimum", threshold=0.1)
-#'
+#' \dontrun{
+#'   isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
+#'   isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="minimum", threshold=0.1)
+#' }
 isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, batch.combine="minimum", threshold = 0.1, normalize=TRUE, detailed=FALSE) {
   # Validate input
   if(is(seqtab, "phyloseq")) {
     ps <- seqtab
     seqtab <- as(ps@otu_table, "matrix")
     if(ps@otu_table@taxa_are_rows) { seqtab <- t(seqtab) }
-    if(is.character(conc) && length(conc)==1) {
-      i <- match(conc, ps@sam_data@names)
-      if(is.na(i)) stop(paste(conc, "is not a valid sample-variable in the provided phyloseq object."))
-      conc <- ps@sam_data@.Data[[i]]
-    }
-    if(is.character(neg) && length(neg)==1) {
-      i <- match(neg, ps@sam_data@names)
-      if(is.na(i)) stop(paste(neg, "is not a valid sample-variable in the provided phyloseq object."))
-      neg <- ps@sam_data@.Data[[i]]
-    }
-    if(is.character(batch) && length(batch)==1) {
-      i <- match(batch, ps@sam_data@names)
-      if(is.na(i)) stop(paste(batch, "is not a valid sample-variable in the provided phyloseq object."))
-      batch <- ps@sam_data@.Data[[i]]
-    }
+    if(is.character(conc) && length(conc)==1) { conc <- getFromPS(ps, conc) }
+    if(is.character(neg) && length(neg)==1) { neg <- getFromPS(ps, neg) }
+    if(is.character(batch) && length(batch)==1) { batch <- getFromPS(ps, batch) }
   }
   if(!(is(seqtab, "matrix") && is.numeric(seqtab))) stop("seqtab must be a numeric matrix.")
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
@@ -106,7 +95,7 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
   do.freq <- FALSE; do.prev <- FALSE; p.freq <- NA; p.prev <- NA
   if(do.freq) {
     if(missing(conc)) stop("conc must be provided to perform frequency-based contaminant identification.")
-    if(!(is.numeric(conc) && all(conc>0))) stop("conc must be a positive numeric vector.")
+    if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
     if(nrow(seqtab) != length(conc)) stop("The length of conc must match the number of samples (the rows of seqtab).")
   }
   if(do.prev) {
@@ -276,11 +265,9 @@ isContaminantPrevalence <- function(freq, neg, method="auto") {
 #' The negative control samples. Extraction controls give the best results.
 #' REQUIRED if performing prevalence-based testing.
 #'
-#' @param method(Optional). Default "frequency".
+#' @param method (Optional). Default "prevalence".
 #' The method used to test for contaminants.
-#' frequency: Contaminants are identified by increased frequency in lower biomass samples.
 #' prevalence: Contaminants are identified by increased prevalence in negative controls.
-#' combined: Both frequency and prevalence are used to identify contaminants.
 #'
 #' @param threshold (Optional). Default \code{0.5}.
 #' The p-value threshold below which (strictly less than) the null-hypothesis (a contaminant) should be rejected in favor of the
@@ -301,18 +288,16 @@ isContaminantPrevalence <- function(freq, neg, method="auto") {
 #' @export
 #'
 #' @examples
-#' isNotContaminant(st, conc, threshold=0.05)
-#'
-isNotContaminant <- function(seqtab, conc=NULL, neg=NULL, method="frequency", threshold = 0.5, normalize=TRUE, detailed=FALSE) {
+#' \dontrun{
+#'   isNotContaminant(st, conc, threshold=0.05)
+#' }
+isNotContaminant <- function(seqtab, conc=NULL, neg=NULL, method="prevalence", threshold = 0.5, normalize=TRUE, detailed=FALSE) {
+  if(!method %in% c("prevalence")) stop("isNotContaminant only supports the following methods: prevalence")
   df <- isContaminant(seqtab, conc=conc, neg=neg, method=method, threshold=threshold, normalize=normalize, detailed=TRUE)
-  # NEED TO REVISIT DEPENDING ON IF FREQUENCY TESTING WILL BE SUPPORTED
-  # IF SO, NEED TO IMPLEMENT THE MINIMUM AND INDEPENDENT METHODS FOR THIS
   df$p.freq <- 1-df$p.freq
   df$p.prev <- 1-df$p.prev
   # Calculate overall p-value
-  if(method=="frequency") { pval <- df$p.freq }
-  else if(method=="prevalence") { pval <- df$p.prev }
-  else { pval <- pchisq(-2*log(df$p.freq * df$p.prev), df=4, lower.tail=FALSE) }
+  if(method=="prevalence") { pval <- df$p.prev }
   # Make contaminant calls
   isNotC <- (pval < threshold)
   isNotC[is.na(isNotC)] <- FALSE # NA pvals are not called not-contaminants
@@ -339,4 +324,10 @@ fish.combine <- function(vec, na.replace=0.5) {
   if(any(vec<0 | vec>1)) stop("fish.combine expects p-values between 0 and 1.")
   p <- prod(vec)
   pchisq(-2*log(p), df=2*length(vec), lower.tail=FALSE)
+}
+
+getFromPS <- function(ps, nm) {
+  i <- match(nm, ps@sam_data@names)
+  if(is.na(i)) stop(paste(nm, "is not a valid sample-variable in the provided phyloseq object."))
+  ps@sam_data@.Data[[i]]
 }

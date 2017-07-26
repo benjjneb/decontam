@@ -3,5 +3,8 @@
 export(isContaminant)
 export(isContaminantPrevalence)
 export(isNotContaminant)
+export(plot_abundance)
+import(ggplot2)
 importFrom(methods,as)
 importFrom(methods,is)
+importFrom(reshape2,melt)

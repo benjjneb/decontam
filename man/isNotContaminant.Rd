@@ -4,7 +4,7 @@
 \alias{isNotContaminant}
 \title{Identify non-contaminant sequences.}
 \usage{
-isNotContaminant(seqtab, conc = NULL, neg = NULL, method = "frequency",
+isNotContaminant(seqtab, conc = NULL, neg = NULL, method = "prevalence",
   threshold = 0.5, normalize = TRUE, detailed = FALSE)
 }
 \arguments{
@@ -21,6 +21,10 @@ REQUIRED if performing frequency-based testing.}
 The negative control samples. Extraction controls give the best results.
 REQUIRED if performing prevalence-based testing.}
 
+\item{method}{(Optional). Default "prevalence".
+The method used to test for contaminants.
+prevalence: Contaminants are identified by increased prevalence in negative controls.}
+
 \item{threshold}{(Optional). Default \code{0.5}.
 The p-value threshold below which (strictly less than) the null-hypothesis (a contaminant) should be rejected in favor of the
 alternate hypothesis (not a contaminant).}
@@ -32,12 +36,6 @@ If FALSE, no normalization is performed (the data should already be frequencies 
 \item{detailed}{(Optional). Default FALSE.
 If TRUE, the return value is a \code{data.frame} containing diagnostic information on the non-contaminant decision.
 If FALSE, the return value is a \code{logical} vector containing the non-contaminant decisions.}
-
-\item{method(Optional).}{Default "frequency".
-The method used to test for contaminants.
-frequency: Contaminants are identified by increased frequency in lower biomass samples.
-prevalence: Contaminants are identified by increased prevalence in negative controls.
-combined: Both frequency and prevalence are used to identify contaminants.}
 }
 \value{
 If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating non-contaminants.
@@ -50,6 +48,7 @@ here is that sequences **are** contaminants. This function is intended for use o
 in which a large proportion of the sequences are likely to be contaminants.
 }
 \examples{
-isNotContaminant(st, conc, threshold=0.05)
-
+\dontrun{
+  isNotContaminant(st, conc, threshold=0.05)
+}
 }
