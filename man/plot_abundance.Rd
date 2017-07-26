@@ -2,10 +2,10 @@
 % Please edit documentation in R/plot_abundances.R
 \name{plot_abundance}
 \alias{plot_abundance}
-\title{plot_abundance}
+\title{Plot relative abundance as a function of input DNA concentration}
 \usage{
-plot_abundance(seqtab, taxa_to_plot, conc, normalize = TRUE,
-  showModels = TRUE, log = TRUE)
+plot_abundance(seqtab, taxa, conc, normalize = TRUE, showModels = TRUE,
+  log = TRUE, facet = TRUE)
 }
 \arguments{
 \item{seqtab}{(Required). \code{Integer matrix} or \code{phyloseq} object.
@@ -13,28 +13,39 @@ A feature table recording the observed abundances of each sequence variant (or O
 Rows should correspond to samples, and columns to sequences (or OTUs).
 If a phyloseq object is provided, the otu-table component will be extracted.}
 
-\item{taxa_to_plot}{(Required). \code{character}.
-The names of the taxa to include in this plot.}
+\item{taxa}{(Required). \code{character}.
+The names of the taxa to include in this plot. Should match \code{colnames(setab)} if a matrix
+was provided, or \code{taxa_names(seqtab)} if a phylsoeq object was provided.}
 
-\item{conc}{(Required). \code{numeric}. Required if performing frequency-based testing.
+\item{conc}{(Required). \code{numeric}.
 A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
 All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
-If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
+If \code{seqtab} was prodivded as a phyloseq object, the name of the sample-variable in that
 phyloseq object can be provided.}
 
 \item{normalize}{(Optional). Default TRUE.
 If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
-If FALSE, no normalization is performed (the data should already be frequencies or counts from equal-depth samples).}
+If FALSE, no normalization is performed (the data should already be frequencies or counts from
+equal-depth samples).}
 
 \item{showModels}{(Optional). Default TRUE.
-If TRUE, the contaminant (red) and non-contaminant (black) models are shown in the plot.}
+If TRUE, the contaminant (red, dashed line) and non-contaminant (black, solid line) models are
+shown in the plot.}
 
 \item{log}{(Optional). Default TRUE.
 If TRUE, the axes are log10-scaled.}
+
+\item{facet}{(Optional). Default TRUE.
+If TRUE, multiple taxa will be plotted in separate facets.}
 }
 \description{
-plots the abundance of selected taxa in each sample vs. each sample's DNA concentration after PCR amplification
+Plots the relative abundance of selected taxa in each sample vs. each sample's DNA concentration.
 }
 \examples{
-
+\dontrun{
+  # MUC is a phyloseq object
+  plot_abundance(MUC,"Seq1",conc="quant_reading")
+  plot_abundance(MUC,c("Seq1", "Seq10", "Seq33"),conc=sample_data(MUC)$quant_reading)
+  plot_abundance(MUC,"Seq1",conc="quant_reading", normalize=FALSE, log=FALSE)
+}
 }

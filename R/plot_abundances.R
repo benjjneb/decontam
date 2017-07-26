@@ -1,42 +1,53 @@
-#
-#' plot_abundance
+#' Plot relative abundance as a function of input DNA concentration
 #'
-#' plots the abundance of selected taxa in each sample vs. each sample's DNA concentration after PCR amplification
+#' Plots the relative abundance of selected taxa in each sample vs. each sample's DNA concentration.
 #'
 #' @param seqtab (Required). \code{Integer matrix} or \code{phyloseq} object.
 #' A feature table recording the observed abundances of each sequence variant (or OTU) in each sample.
 #' Rows should correspond to samples, and columns to sequences (or OTUs).
 #' If a phyloseq object is provided, the otu-table component will be extracted.
 #'
-#' @param taxa_to_plot (Required). \code{character}.
-#' The names of the taxa to include in this plot.
+#' @param taxa (Required). \code{character}.
+#' The names of the taxa to include in this plot. Should match \code{colnames(setab)} if a matrix
+#' was provided, or \code{taxa_names(seqtab)} if a phylsoeq object was provided.
 #'
-#' @param conc (Required). \code{numeric}. Required if performing frequency-based testing.
+#' @param conc (Required). \code{numeric}.
 #' A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
 #' All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
-#' If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
+#' If \code{seqtab} was prodivded as a phyloseq object, the name of the sample-variable in that
 #' phyloseq object can be provided.
 #'
 #' @param normalize (Optional). Default TRUE.
 #' If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
-#' If FALSE, no normalization is performed (the data should already be frequencies or counts from equal-depth samples).
+#' If FALSE, no normalization is performed (the data should already be frequencies or counts from
+#' equal-depth samples).
 #'
 #' @param showModels (Optional). Default TRUE.
-#' If TRUE, the contaminant (red) and non-contaminant (black) models are shown in the plot.
+#' If TRUE, the contaminant (red, dashed line) and non-contaminant (black, solid line) models are
+#' shown in the plot.
 #'
 #' @param log (Optional). Default TRUE.
 #' If TRUE, the axes are log10-scaled.
 #'
+#' @param facet (Optional). Default TRUE.
+#' If TRUE, multiple taxa will be plotted in separate facets.
+#'
 #' @importFrom methods as
 #' @importFrom methods is
 #' @importFrom reshape2 melt
+#' @importFrom stats lm
 #' @import ggplot2
 #'
 #' @export
 #'
 #' @examples
-#'
-plot_abundance <- function(seqtab, taxa_to_plot, conc, normalize=TRUE, showModels=TRUE, log=TRUE){
+#' \dontrun{
+#'   # MUC is a phyloseq object
+#'   plot_abundance(MUC,"Seq1",conc="quant_reading")
+#'   plot_abundance(MUC,c("Seq1", "Seq10", "Seq33"),conc=sample_data(MUC)$quant_reading)
+#'   plot_abundance(MUC,"Seq1",conc="quant_reading", normalize=FALSE, log=FALSE)
+#' }
+plot_abundance <- function(seqtab, taxa, conc, normalize=TRUE, showModels=TRUE, log=TRUE, facet=TRUE){
   # Validate input
   if(is(seqtab, "phyloseq")) {
     ps <- seqtab
@@ -48,25 +59,56 @@ plot_abundance <- function(seqtab, taxa_to_plot, conc, normalize=TRUE, showModel
   }
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
   if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
-  if(is.character(taxa_to_plot)) {
-    seqtab <- seqtab[,colnames(seqtab) %in% taxa_to_plot,drop=FALSE]
+  if(is.character(taxa)) {
+    seqtab <- seqtab[,colnames(seqtab) %in% taxa,drop=FALSE]
   } else {
     stop("taxa must be a vector of taxa names.")
   }
-  if(ncol(seqtab) == 0) stop("None of the provided taxa were present.")
+  ntax.plot <- ncol(seqtab)
+  if(ntax.plot == 0) stop("None of the provided taxa were present in seqtab.")
   # Prepare plotting data.frame
   if(is.null(ps)) {
     plotdf <- cbind(data.frame(seqtab), DNA_conc=conc)
   } else {
     plotdf <- cbind(data.frame(seqtab), data.frame(sample_data(ps)), DNA_conc=conc)
   }
-  plot_melt <- melt(plotdf, measure.vars=1:ncol(seqtab), variable.name="taxa_to_plot", value.name="taxon_abundance")
+  plot_melt <- melt(plotdf, measure.vars=1:ntax.plot, variable.name="taxa", value.name="taxon_abundance")
 
-  taxon_levels <- taxa_to_plot
-  plot_melt$taxa_to_plot <- factor(plot_melt$taxa_to_plot, levels = taxon_levels)
+  taxon_levels <- taxa
+  plot_melt$taxa <- factor(plot_melt$taxa, levels = taxon_levels)
 
-  p1 <- ggplot(data=plot_melt, aes(DNA_conc, taxon_abundance)) + xlab("DNA Concentration") + ylab("Relative Abundance")
-  if(log) p1 <- p1 + scale_x_log10() + scale_y_log10()
+  if(showModels) {
+    #    moddf <- data.frame(DNA_conc=seq(min(plotdf$DNA_conc), max(plotdf$DNA_conc), length.out=200))
+    mod_melts <- split(plot_melt, plot_melt$taxa)
+    logc <- log(seq(min(plotdf$DNA_conc), max(plotdf$DNA_conc), length.out=1000))
+    for(tax in names(mod_melts)) {
+      # Code copied in from isContaminantFrequency
+      newdata <- data.frame(logc=logc, taxa=tax, DNA_conc=exp(logc))
+      freq <- mod_melts[[tax]]$taxon_abundance
+      conc <- mod_melts[[tax]]$DNA_conc
+      df <- data.frame(logc=log(conc), logf=log(freq))
+      df <- df[freq>0,]
+      if(sum(freq>0)>1) {
+        lm1 <- lm(logf~offset(-1*logc), data=df)
+        lm0 <- lm(logf~1, data=df)
+        newdata$contam <- exp(predict(lm1, newdata=newdata))
+        newdata$non.contam <- exp(predict(lm0, newdata=newdata))
+      } else {
+        newdata$contam <- NA
+        newdata$non.contam <- NA
+      }
+      mod_melts[[tax]] <- newdata
+    }
+    mod_melt <- do.call(rbind, mod_melts)
+  }
+
+  p1 <- ggplot(data=plot_melt, aes(DNA_conc, taxon_abundance)) + xlab("DNA Concentration")
+  p1 <- p1 + ylab(ifelse(normalize, "Frequency", "Relative Abundance"))
+  if(log) p1 <- p1 + scale_x_log10()
+  if(log) p1 <- p1 + scale_y_log10(limits=c(NA, ifelse(normalize || all(plot_melt$DNA_conc <= 1), 1, NA)))
+  if(facet && ntax.plot > 1) p1 <- p1 + facet_wrap(~taxa)
+  if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes(y=contam), color="red", linetype="solid")
+  if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes(y=non.contam), color="black", linetype="dashed")
   p1 + geom_point()
 }
 
@@ -75,7 +117,7 @@ plot_abundance <- function(seqtab, taxa_to_plot, conc, normalize=TRUE, showModel
 
 #plot_abundance(MUC,"Seq1","quant_reading", taxa_are_rows=FALSE)
 #plot_abundance(MUC,c("Seq152","Seq1"),"quant_reading",taxa_are_rows=FALSE)
-#plot_abundance(MUC,c("Seq152","Seq1"),"quant_reading",taxa_are_rows=FALSE) + facet_wrap(~taxa_to_plot)
+#plot_abundance(MUC,c("Seq152","Seq1"),"quant_reading",taxa_are_rows=FALSE) + facet_wrap(~taxa)
 
 #plot_abundance(cdiff, c("42372","9710"), conc="Fluorescence")
 #p <- plot_abundance(cdiff, c("42372","9710"), conc="Fluorescence")

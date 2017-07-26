@@ -185,7 +185,7 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
   }
   return(rval)
 }
-#' importFrom stats lm
+#' @importFrom stats lm
 #'
 #' @keywords internal
 isContaminantFrequency <- function(freq, conc) {
