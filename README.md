@@ -10,7 +10,7 @@ Coming soon: Full publication with benchmarking demonstrating how `decontam`-ina
 
 ## Installation
 
-The decontam package is currently only available as a source package through github, and the following instructions assume that you can compile R packages. This means that you ust have installed R, and that you have the R tool-chain, which requires the [Xcode comnand-line tools](http://railsapps.github.io/xcode-command-line-tools.html) on the Mac and [Rtools](https://cran.r-project.org/bin/windows/Rtools/) on Windows.
+The decontam R package is currently available as a source package through github, so installation requires the ability to compile R packages. This means that R and the R tool-chain must be installed, which requires the [Xcode comnand-line tools](http://railsapps.github.io/xcode-command-line-tools.html) on Mac and [Rtools](https://cran.r-project.org/bin/windows/Rtools/) on Windows.
 
 The easiest installation method uses the `devtools` package:
 
