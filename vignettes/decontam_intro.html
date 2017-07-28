@@ -114,7 +114,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Introduction to decontam</h1>
 <p class="author-name">Benjamin Callahan, Nicole Davis</p>
-<h4 class="date"><em>Fri Jul 28 13:23:18 2017</em></h4>
+<h4 class="date"><em>Fri Jul 28 14:01:32 2017</em></h4>
 
 </div>
 
@@ -135,8 +135,7 @@ $(document).ready(function () {
 
 <div id="identifying-contaminants-in-marker-gene-or-metagenomics-data" class="section level1">
 <h1><span class="header-section-number">1</span> Identifying contaminants in marker-gene or metagenomics data</h1>
-<p>Benjamin Callahan, Nicole Davis</p>
-<p>Dept. of Population Health &amp; Pathobiology North Carolina State University Raleigh, NC 27606 <a href="mailto:benjamin.j.callahan@gmail.com">benjamin.j.callahan@gmail.com</a></p>
+<p>Introduction to <a href="https://github.com/benjjneb/decontam">the decontam R package</a>. User support, feature requests, comments and suggestions welcome at <a href="https://github.com/benjjneb/decontam/issues">the decontam issues tracker</a>.</p>
 </div>
 <div id="introduction" class="section level1">
 <h1><span class="header-section-number">2</span> Introduction</h1>
@@ -158,7 +157,7 @@ $(document).ready(function () {
 <pre class="r"><code>library(ggplot2); packageVersion(&quot;ggplot2&quot;)</code></pre>
 <pre><code>## [1] '2.2.1'</code></pre>
 <pre class="r"><code>library(decontam); packageVersion(&quot;decontam&quot;)</code></pre>
-<pre><code>## [1] '0.1.6'</code></pre>
+<pre><code>## [1] '0.1.7'</code></pre>
 <pre class="r"><code>ps &lt;- readRDS(system.file(&quot;extdata&quot;, &quot;MUClite.rds&quot;, package=&quot;decontam&quot;))
 ps</code></pre>
 <pre><code>## phyloseq-class experiment-level object
@@ -259,7 +258,7 @@ ggplot(data=df.pres, aes(x=prevalence.neg, y=prevalence.pos, color=contam.prev))
 </div>
 <div id="conclusion" class="section level1">
 <h1><span class="header-section-number">9</span> Conclusion</h1>
-<p>We all know that contaminants are a problem in marker-gene and metagenomics data. Right now, it is widespread practice to addredd this by sequencing negative controls, and then … ignoring them, in large part because there haven’t been easy to use tools available to identify contaminants from this kind of data. That’s what the <code>decontam</code> package is for: It provides a simple interface that takes in your table of sequence features (e.g. ASVs, OTUs, MAGs, genera, …), and outputs the contaminants identified by simple statistical tests that are based on signatures demonstrated over many previous studies.</p>
+<p>We all know that contaminants are a problem in marker-gene and metagenomics data. Right now, it is widespread practice to address contamition by sequencing negative controls, and then … doing nothing – in large part because there haven’t been easy to use tools available to identify contaminants from this kind of data. That’s where the <code>decontam</code> package steps in: <code>decontam</code> provides a simple interface that takes in your table of sequence features (ASVs, OTUs, MAGs, genera, etc), and outputs the contaminant features identified by simple statistical tests based on signatures of contamination that have bene demonstrated over many previous studies.</p>
 <p>Removing contaminants makes the characterizations provided by marker-gene and metagenomics sequencing more accurate. It prevent false positives in exploratory analyses. It reduces batch effects between different studies and sequencing runs. It increases statistical power by reducing the additional hypotheses spent on contaminant sequencing features.</p>
 <p>Removing contaminants makes your data better, and that’s always worth doing.</p>
 </div>

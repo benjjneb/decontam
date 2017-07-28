@@ -12,12 +12,7 @@ vignette: >
 
 # Identifying contaminants in marker-gene or metagenomics data
 
-Benjamin Callahan, Nicole Davis
-
-Dept. of Population Health & Pathobiology
-North Carolina State University
-Raleigh, NC 27606
-<benjamin.j.callahan@gmail.com>
+Introduction to [the decontam R package](https://github.com/benjjneb/decontam). User support, feature requests, comments and suggestions welcome at [the decontam issues tracker](https://github.com/benjjneb/decontam/issues).
 
 # Introduction
 
@@ -153,7 +148,7 @@ The two basic methods implemented are the `frequency` and `prevalence` methods s
 
 # Conclusion
 
-We all know that contaminants are a problem in marker-gene and metagenomics data. Right now, it is widespread practice to addredd this by sequencing negative controls, and then ... ignoring them, in large part because there haven't been easy to use tools available to identify contaminants from this kind of data. That's what the `decontam` package is for: It provides a simple interface that takes in your table of sequence features (e.g. ASVs, OTUs, MAGs, genera, ...), and outputs the contaminants identified by simple statistical tests that are based on signatures demonstrated over many previous studies.
+We all know that contaminants are a problem in marker-gene and metagenomics data. Right now, it is widespread practice to address contamition by sequencing negative controls, and then ... doing nothing -- in large part because there haven't been easy to use tools available to identify contaminants from this kind of data. That's where the `decontam` package steps in: `decontam` provides a simple interface that takes in your table of sequence features (ASVs, OTUs, MAGs, genera, etc), and outputs the contaminant features identified by simple statistical tests based on signatures of contamination that have bene demonstrated over many previous studies.
 
 Removing contaminants makes the characterizations provided by marker-gene and metagenomics sequencing more accurate. It prevent false positives in exploratory analyses. It reduces batch effects between different studies and sequencing runs. It increases statistical power by reducing the additional hypotheses spent on contaminant sequencing features.
 
