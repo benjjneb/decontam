@@ -1,7 +1,3 @@
-# decontam
-
-Simple statistical identification of contaminants from marker-gene and metagenomics data.
-
 ## Documentation
 
 **An [introductory vignette](vignettes/decontam_intro.html) demonstrating how to use the decontam package to identify contaminants.**
