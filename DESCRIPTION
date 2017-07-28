@@ -1,11 +1,12 @@
 Package: decontam
 Type: Package
 Title: Identify Contaminants in Marker-gene and Metagenomics Sequencing Data
-Version: 0.1.6
+Version: 0.1.7
 Author: Benjamin Callahan <benjamin.j.callahan@gmail.com>, Nicole Marie Davis
 Maintainer: Benjamin Callahan <benjamin.j.callahan@gmail.com>
-Description: Simple statistical identification of contaminating sequence features from 
-    marker-gene or metagenomics data. Any kind of feature derived from the sequence data. 
+Description: Simple statistical identification of contaminating sequence features in 
+    marker-gene or metagenomics data. Works on any kind of feature derived from 
+    environmental sequencing data.
     Requires DNA quantitation data or sequenced negative control samples.
 Depends:
     R (>= 3.3.1),
@@ -15,5 +16,9 @@ Imports:
     reshape2 (>= 1.4.1)
 License: Artistic-2.0
 Encoding: UTF-8
+VignetteBuilder: knitr
+biocViews: Microbiome, Sequencing, Classification, Metagenomics
+URL: https://github.com/benjjneb/decontam
+BugReports: https://github.com/benjjneb/decontam/issues
 LazyData: true
 RoxygenNote: 6.0.1
