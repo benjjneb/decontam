@@ -28,7 +28,7 @@ install.packages("path/to/dada2",
 
 An [introductory vignette](vignettes/decontam_intro.html) demonstrating how to use the decontam package to identify contaminants.
 
-Coming soon: Full publication with benchmarking demonstrating how `decontam`inating your data removes kit contaminants, reduces batch effects, and prevents false-positive assocations.
+Coming soon: Full publication with benchmarking demonstrating how `decontam`inating your data removes reagent sequences, reduces batch effects, and prevents false-positive assocations.
 
 ### Other Resources
 
