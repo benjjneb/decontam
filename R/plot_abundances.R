@@ -1,6 +1,6 @@
-#' Plot relative abundance as a function of input DNA concentration
+#' Plot frequencies as a function of input DNA concentration
 #'
-#' Plots the relative abundance of selected taxa in each sample vs. each sample's DNA concentration.
+#' Plots the frequencies of selected taxa in each sample vs. each sample's DNA concentration.
 #'
 #' @param seqtab (Required). \code{Integer matrix} or \code{phyloseq} object.
 #' A feature table recording the observed abundances of each sequence variant (or OTU) in each sample.
@@ -43,11 +43,11 @@
 #' @examples
 #' \dontrun{
 #'   # MUC is a phyloseq object
-#'   plot_abundance(MUC,"Seq1",conc="quant_reading")
-#'   plot_abundance(MUC,c("Seq1", "Seq10", "Seq33"),conc=sample_data(MUC)$quant_reading)
-#'   plot_abundance(MUC,"Seq1",conc="quant_reading", normalize=FALSE, log=FALSE)
+#'   plot_frequency(MUC,"Seq1",conc="quant_reading")
+#'   plot_frequency(MUC,c("Seq1", "Seq10", "Seq33"),conc=sample_data(MUC)$quant_reading)
+#'   plot_frequency(MUC,"Seq1",conc="quant_reading", normalize=FALSE, log=FALSE)
 #' }
-plot_abundance <- function(seqtab, taxa, conc, normalize=TRUE, showModels=TRUE, log=TRUE, facet=TRUE){
+plot_frequency <- function(seqtab, taxa, conc, normalize=TRUE, showModels=TRUE, log=TRUE, facet=TRUE){
   # Validate input
   if(is(seqtab, "phyloseq")) {
     ps <- seqtab
@@ -113,13 +113,13 @@ plot_abundance <- function(seqtab, taxa, conc, normalize=TRUE, showModels=TRUE, 
 }
 
 ##Examples
-#plot_abundance(fungal,"denovo7","qPCR_copies",taxa_are_rows=TRUE)
+#plot_frequency(fungal,"denovo7","qPCR_copies",taxa_are_rows=TRUE)
 
-#plot_abundance(MUC,"Seq1","quant_reading", taxa_are_rows=FALSE)
-#plot_abundance(MUC,c("Seq152","Seq1"),"quant_reading",taxa_are_rows=FALSE)
-#plot_abundance(MUC,c("Seq152","Seq1"),"quant_reading",taxa_are_rows=FALSE) + facet_wrap(~taxa)
+#plot_frequency(MUC,"Seq1","quant_reading", taxa_are_rows=FALSE)
+#plot_frequency(MUC,c("Seq152","Seq1"),"quant_reading",taxa_are_rows=FALSE)
+#plot_frequency(MUC,c("Seq152","Seq1"),"quant_reading",taxa_are_rows=FALSE) + facet_wrap(~taxa)
 
-#plot_abundance(cdiff, c("42372","9710"), conc="Fluorescence")
-#p <- plot_abundance(cdiff, c("42372","9710"), conc="Fluorescence")
+#plot_frequency(cdiff, c("42372","9710"), conc="Fluorescence")
+#p <- plot_frequency(cdiff, c("42372","9710"), conc="Fluorescence")
 #p + facet_wrap(~OTU)
 #p + geom_point(aes(color=Treatment)) + facet_wrap(~OTU)
