@@ -24,11 +24,11 @@ table(contam.freq)
 head(which(contam.freq))
 
 ## ----plot-abundance, warning=FALSE-----------------------------------------
-plot_abundance(ps, taxa_names(ps)[c(1,3)], conc="quant_reading")
+plot_frequency(ps, taxa_names(ps)[c(1,3)], conc="quant_reading")
 
 ## ----see-contams, warning=FALSE--------------------------------------------
 set.seed(100)
-plot_abundance(ps, taxa_names(ps)[sample(which(contam.freq),3)], conc="quant_reading")
+plot_frequency(ps, taxa_names(ps)[sample(which(contam.freq),3)], conc="quant_reading")
 
 ## ----remove----------------------------------------------------------------
 ps

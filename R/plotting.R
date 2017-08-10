@@ -1,21 +1,22 @@
 #' Plot frequencies as a function of input DNA concentration
 #'
-#' Plots the frequencies of selected taxa in each sample vs. each sample's DNA concentration.
+#' Plots the frequencies of selected sequence features vs. each sample's DNA concentration.
 #'
 #' @param seqtab (Required). \code{Integer matrix} or \code{phyloseq} object.
-#' A feature table recording the observed abundances of each sequence variant (or OTU) in each sample.
+#' A feature table recording the observed abundances of each sequence feature (e.g. OTUs or ASVs or
+#' or genus or ortholog or...) in each sample.
 #' Rows should correspond to samples, and columns to sequences (or OTUs).
 #' If a phyloseq object is provided, the otu-table component will be extracted.
 #'
 #' @param taxa (Required). \code{character}.
-#' The names of the taxa to include in this plot. Should match \code{colnames(setab)} if a matrix
-#' was provided, or \code{taxa_names(seqtab)} if a phylsoeq object was provided.
+#' The names of the sequence features to include in this plot. Should match \code{colnames(setab)}
+#' if a \code{matrix} was provided, or \code{taxa_names(seqtab)} if a \code{phyloseq} object was provided.
 #'
 #' @param conc (Required). \code{numeric}.
 #' A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
 #' All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
-#' If \code{seqtab} was prodivded as a phyloseq object, the name of the sample-variable in that
-#' phyloseq object can be provided.
+#' If \code{seqtab} was provided as a \code{phyloseq} object, the name of the sample variable in the
+#' \code{phyloseq} object can be provided.
 #'
 #' @param normalize (Optional). Default TRUE.
 #' If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
@@ -30,7 +31,7 @@
 #' If TRUE, the axes are log10-scaled.
 #'
 #' @param facet (Optional). Default TRUE.
-#' If TRUE, multiple taxa will be plotted in separate facets.
+#' If TRUE, multiple sequence features will be plotted in separate facets.
 #'
 #' @importFrom methods as
 #' @importFrom methods is
@@ -111,15 +112,3 @@ plot_frequency <- function(seqtab, taxa, conc, normalize=TRUE, showModels=TRUE, 
   if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes(y=non.contam), color="black", linetype="dashed")
   p1 + geom_point()
 }
-
-##Examples
-#plot_frequency(fungal,"denovo7","qPCR_copies",taxa_are_rows=TRUE)
-
-#plot_frequency(MUC,"Seq1","quant_reading", taxa_are_rows=FALSE)
-#plot_frequency(MUC,c("Seq152","Seq1"),"quant_reading",taxa_are_rows=FALSE)
-#plot_frequency(MUC,c("Seq152","Seq1"),"quant_reading",taxa_are_rows=FALSE) + facet_wrap(~taxa)
-
-#plot_frequency(cdiff, c("42372","9710"), conc="Fluorescence")
-#p <- plot_frequency(cdiff, c("42372","9710"), conc="Fluorescence")
-#p + facet_wrap(~OTU)
-#p + geom_point(aes(color=Treatment)) + facet_wrap(~OTU)

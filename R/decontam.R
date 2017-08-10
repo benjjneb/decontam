@@ -93,6 +93,8 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
     stop("Valid method arguments: frequency, prevalence, combined, minimum, independent")
   }
   do.freq <- FALSE; do.prev <- FALSE; p.freq <- NA; p.prev <- NA
+  if(method %in% c("frequency", "minimum", "combined", "minimum", "independent")) do.freq <- TRUE
+  if(method %in% c("prevalence", "combined", "minimum", "independent")) do.prev <- TRUE
   if(do.freq) {
     if(missing(conc)) stop("conc must be provided to perform frequency-based contaminant identification.")
     if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
@@ -101,8 +103,6 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
   if(do.prev) {
     if(missing(neg)) stop("neg must be provided to perform prevalence-based contaminant identification.")
   }
-  if(method %in% c("frequency", "minimum", "combined", "minimum", "independent")) do.freq <- TRUE
-  if(method %in% c("prevalence", "combined", "minimum", "independent")) do.prev <- TRUE
   if(is.numeric(threshold) && all(threshold >= 0) && all(threshold <= 1)) {
     if(method == "independent") {
       if(length(threshold) == 1) {
@@ -190,8 +190,8 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
 #' @keywords internal
 isContaminantFrequency <- function(freq, conc) {
   df <- data.frame(logc=log(conc), logf=log(freq))
-  df <- df[freq>0,]
-  if(sum(freq>0)>1) {
+  df <- df[!is.na(freq) & freq>0,]
+  if(nrow(df)>1) {
     lm1 <- lm(logf~offset(-1*logc), data=df)
     SS1 <- sum(lm1$residuals^2)
     lm0 <- lm(logf~1, data=df)
