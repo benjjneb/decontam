@@ -6,7 +6,7 @@
 \usage{
 isContaminant(seqtab, conc = NULL, neg = NULL, method = NULL,
   batch = NULL, batch.combine = "minimum", threshold = 0.1,
-  normalize = TRUE, detailed = FALSE)
+  normalize = TRUE, detailed = TRUE)
 }
 \arguments{
 \item{seqtab}{(Required). \code{Integer matrix} or \code{phyloseq} object.
@@ -28,11 +28,12 @@ phyloseq object can be provided.}
 
 \item{method}{(Optional). \code{character}. The method used to test for contaminants.
 \describe{
-  \item{frequency}{Contaminants are identified by increased frequency in lower biomass samples.}
+  \item{frequency}{Contaminants are identified by frequency that varies inversely with sample DNA concentration.}
   \item{prevalence}{Contaminants are identified by increased prevalence in negative controls.}
   \item{combined}{The combined frequency and prevalence p-value (Fisher's method) is used to identify contaminants.}
   \item{minimum}{The minimum of the frequency and prevalence p-values is used to identify contaminants.}
-  \item{independent}{The frequency and prevalence p-values are used independently to identify contaminants.}
+  \item{either}{Contaminants are called if identified by either the frequency or prevalance methods.}
+  \item{either}{Contaminants are called if identified by both the frequency and prevalance methods.}
 }
 If \code{method} is not specified, frequency, prevalence or combined will be automatically selected based on
 whether just \code{conc}, just \code{neg}, or both were provided.}
@@ -52,20 +53,20 @@ The "frequency" and "prevalence" p-values are combined across batches independen
 
 \item{threshold}{(Optional). Default \code{0.1}.
 The p-value threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
-alternate hypothesis (contaminant). A length-two vector can be provided when using the independent method:
+alternate hypothesis (contaminant). A length-two vector can be provided when using the \code{either} or \code{both} methods:
 the first value is the threshold for the frequency test and the second for the prevalence test.}
 
 \item{normalize}{(Optional). Default TRUE.
 If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
 If FALSE, no normalization is performed (the data should already be frequencies or counts from equal-depth samples).}
 
-\item{detailed}{(Optional). Default FALSE.
+\item{detailed}{(Optional). Default TRUE.
 If TRUE, the return value is a \code{data.frame} containing diagnostic information on the contaminant decision.
-If FALSE, the return value is a \code{logical} vector containing the contaminant decisions.}
+If FALSE, the return value is a \code{logical} vector containing the binary contaminant classifications.}
 }
 \value{
-If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
 If \code{detailed=TRUE} a \code{data.frame} with additional information (such as the p-value) is returned.
+If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
 }
 \description{
 The frequency of each sequence (or OTU) in the input feature table as a function of the concentration of
@@ -74,6 +75,6 @@ amplified DNA in each sample is used to identify contaminant sequences.
 \examples{
 \dontrun{
   isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
-  isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="minimum", threshold=0.1)
+  isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="both", threshold=c(0.1,0.5))
 }
 }

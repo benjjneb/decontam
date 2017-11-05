@@ -18,6 +18,11 @@
 #' If \code{seqtab} was provided as a \code{phyloseq} object, the name of the sample variable in the
 #' \code{phyloseq} object can be provided.
 #'
+#' @param neg (Optional). \code{logical}.
+#' TRUE if sample is a negative control, and FALSE if not.
+#' If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
+#' phyloseq object can be provided.
+#'
 #' @param normalize (Optional). Default TRUE.
 #' If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
 #' If FALSE, no normalization is performed (the data should already be frequencies or counts from
@@ -48,18 +53,20 @@
 #'   plot_frequency(MUC,c("Seq1", "Seq10", "Seq33"),conc=sample_data(MUC)$quant_reading)
 #'   plot_frequency(MUC,"Seq1",conc="quant_reading", normalize=FALSE, log=FALSE)
 #' }
-plot_frequency <- function(seqtab, taxa, conc, normalize=TRUE, showModels=TRUE, log=TRUE, facet=TRUE){
+plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showModels=TRUE, log=TRUE, facet=TRUE){
   # Validate input
   if(is(seqtab, "phyloseq")) {
     ps <- seqtab
     seqtab <- as(ps@otu_table, "matrix")
     if(ps@otu_table@taxa_are_rows) { seqtab <- t(seqtab) }
     if(is.character(conc) && length(conc)==1) { conc <- getFromPS(ps, conc) }
+    if(is.character(neg) && length(neg)==1) { neg <- getFromPS(ps, neg) }
   } else {
     ps <- NULL # No phyloseq object
   }
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
   if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
+  if(missing(neg)) neg <- rep(FALSE, length(conc)) # Don't ignore any samples
   if(is.character(taxa)) {
     seqtab <- seqtab[,colnames(seqtab) %in% taxa,drop=FALSE]
   } else {
@@ -69,9 +76,9 @@ plot_frequency <- function(seqtab, taxa, conc, normalize=TRUE, showModels=TRUE, 
   if(ntax.plot == 0) stop("None of the provided taxa were present in seqtab.")
   # Prepare plotting data.frame
   if(is.null(ps)) {
-    plotdf <- cbind(data.frame(seqtab), DNA_conc=conc)
+    plotdf <- cbind(data.frame(seqtab), DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
   } else {
-    plotdf <- cbind(data.frame(seqtab), data.frame(sample_data(ps)), DNA_conc=conc)
+    plotdf <- cbind(data.frame(seqtab), data.frame(sample_data(ps)), DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
   }
   plot_melt <- melt(plotdf, measure.vars=1:ntax.plot, variable.name="taxa", value.name="taxon_abundance")
 
@@ -84,10 +91,12 @@ plot_frequency <- function(seqtab, taxa, conc, normalize=TRUE, showModels=TRUE, 
     logc <- log(seq(min(plotdf$DNA_conc), max(plotdf$DNA_conc), length.out=1000))
     for(tax in names(mod_melts)) {
       # Code copied in from isContaminantFrequency
+      # Should really consider functionalizing this to avoid issues with the duplicated code
       newdata <- data.frame(logc=logc, taxa=tax, DNA_conc=exp(logc))
       freq <- mod_melts[[tax]]$taxon_abundance
       conc <- mod_melts[[tax]]$DNA_conc
       df <- data.frame(logc=log(conc), logf=log(freq))
+      df <- df[!neg | is.na(neg),]
       df <- df[freq>0,]
       if(sum(freq>0)>1) {
         lm1 <- lm(logf~offset(-1*logc), data=df)
@@ -107,6 +116,7 @@ plot_frequency <- function(seqtab, taxa, conc, normalize=TRUE, showModels=TRUE, 
   p1 <- p1 + ylab(ifelse(normalize, "Frequency", "Relative Abundance"))
   if(log) p1 <- p1 + scale_x_log10()
   if(log) p1 <- p1 + scale_y_log10(limits=c(NA, ifelse(normalize || all(plot_melt$DNA_conc <= 1), 1, NA)))
+  if(nlevels(factor(neg))>1) p1 <- p1 + aes(color=Type)
   if(facet && ntax.plot > 1) p1 <- p1 + facet_wrap(~taxa)
   if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes(y=contam), color="red", linetype="solid")
   if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes(y=non.contam), color="black", linetype="dashed")

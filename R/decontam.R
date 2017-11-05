@@ -22,11 +22,12 @@
 #'
 #' @param method (Optional). \code{character}. The method used to test for contaminants.
 #' \describe{
-#'   \item{frequency}{Contaminants are identified by increased frequency in lower biomass samples.}
+#'   \item{frequency}{Contaminants are identified by frequency that varies inversely with sample DNA concentration.}
 #'   \item{prevalence}{Contaminants are identified by increased prevalence in negative controls.}
 #'   \item{combined}{The combined frequency and prevalence p-value (Fisher's method) is used to identify contaminants.}
 #'   \item{minimum}{The minimum of the frequency and prevalence p-values is used to identify contaminants.}
-#'   \item{independent}{The frequency and prevalence p-values are used independently to identify contaminants.}
+#'   \item{either}{Contaminants are called if identified by either the frequency or prevalance methods.}
+#'   \item{either}{Contaminants are called if identified by both the frequency and prevalance methods.}
 #' }
 #' If \code{method} is not specified, frequency, prevalence or combined will be automatically selected based on
 #' whether just \code{conc}, just \code{neg}, or both were provided.
@@ -47,20 +48,20 @@
 #'
 #' @param threshold (Optional). Default \code{0.1}.
 #' The p-value threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
-#' alternate hypothesis (contaminant). A length-two vector can be provided when using the independent method:
+#' alternate hypothesis (contaminant). A length-two vector can be provided when using the \code{either} or \code{both} methods:
 #' the first value is the threshold for the frequency test and the second for the prevalence test.
 #'
 #' @param normalize (Optional). Default TRUE.
 #' If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
 #' If FALSE, no normalization is performed (the data should already be frequencies or counts from equal-depth samples).
 #'
-#' @param detailed (Optional). Default FALSE.
+#' @param detailed (Optional). Default TRUE.
 #' If TRUE, the return value is a \code{data.frame} containing diagnostic information on the contaminant decision.
-#' If FALSE, the return value is a \code{logical} vector containing the contaminant decisions.
+#' If FALSE, the return value is a \code{logical} vector containing the binary contaminant classifications.
 #'
 #' @return
-#' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
 #' If \code{detailed=TRUE} a \code{data.frame} with additional information (such as the p-value) is returned.
+#' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
 #'
 #' @importFrom methods as
 #' @importFrom methods is
@@ -70,9 +71,9 @@
 #' @examples
 #' \dontrun{
 #'   isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
-#'   isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="minimum", threshold=0.1)
+#'   isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="both", threshold=c(0.1,0.5))
 #' }
-isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, batch.combine="minimum", threshold = 0.1, normalize=TRUE, detailed=FALSE) {
+isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, batch.combine="minimum", threshold = 0.1, normalize=TRUE, detailed=TRUE) {
   # Validate input
   if(is(seqtab, "phyloseq")) {
     ps <- seqtab
@@ -89,22 +90,23 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
     else if(missing(conc) && !missing(neg)) method <- "prevalence"
     else method <- "combined"
   }
-  if(!method %in% c("frequency", "prevalence", "combined", "minimum", "independent")) {
-    stop("Valid method arguments: frequency, prevalence, combined, minimum, independent")
+  if(!method %in% c("frequency", "prevalence", "combined", "minimum", "either", "both")) {
+    stop("Valid method arguments: frequency, prevalence, combined, minimum, either, both")
   }
   do.freq <- FALSE; do.prev <- FALSE; p.freq <- NA; p.prev <- NA
-  if(method %in% c("frequency", "minimum", "combined", "minimum", "independent")) do.freq <- TRUE
-  if(method %in% c("prevalence", "combined", "minimum", "independent")) do.prev <- TRUE
+  if(method %in% c("frequency", "minimum", "combined", "minimum", "either", "both")) do.freq <- TRUE
+  if(method %in% c("prevalence", "combined", "minimum", "either", "both")) do.prev <- TRUE
+  if(do.prev) {
+    if(missing(neg)) stop("neg must be provided to perform prevalence-based contaminant identification.")
+  }
   if(do.freq) {
     if(missing(conc)) stop("conc must be provided to perform frequency-based contaminant identification.")
     if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
     if(nrow(seqtab) != length(conc)) stop("The length of conc must match the number of samples (the rows of seqtab).")
-  }
-  if(do.prev) {
-    if(missing(neg)) stop("neg must be provided to perform prevalence-based contaminant identification.")
+    if(missing(neg)) neg <- rep(FALSE, length(conc)) # Don't ignore any samples
   }
   if(is.numeric(threshold) && all(threshold >= 0) && all(threshold <= 1)) {
-    if(method == "independent") {
+    if(method %in% c("either", "both")) {
       if(length(threshold) == 1) {
         message("Using same threshold value for the frequency and prevalence contaminant identification.")
         threshold <- c(threshold, threshold)
@@ -129,7 +131,7 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
   for(bat in levels(batch)) {
     # Calculate frequency p-value
     if(do.freq) {
-      p.freqs[bat,] <- apply(seqtab[batch==bat,], 2, isContaminantFrequency, conc=conc[batch==bat])
+      p.freqs[bat,] <- apply(seqtab[batch==bat & !neg,], 2, isContaminantFrequency, conc=conc[batch==bat & !neg])
     }
     # Calculate prevalence p-value
     if(do.prev) {
@@ -168,11 +170,13 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
   else if(method=="prevalence") { pval <- p.prev }
   else if(method=="minimum") { pval <- pmin(p.freq, p.prev) }
   else if(method=="combined") { pval <- pchisq(-2*log(p.freq * p.prev), df=4, lower.tail=FALSE) }
-  else if(method=="independent") { pval <- rep(NA, length(p.freq)) }
+  else if(method %in% c("either", "both")) { pval <- rep(NA, length(p.freq)) }
   else { stop("Invalid method specified.") }
 
-  if(method=="independent") { # Two tests
+  if(method=="either") { # Two tests
     isC <- (p.freq < threshold[[1]]) | (p.prev < threshold[[2]])
+  } else if(method =="both") {
+    isC <- (p.freq < threshold[[1]]) & (p.prev < threshold[[2]])
   } else { # One test
     isC <- (pval < threshold)
   }
@@ -266,7 +270,7 @@ isContaminantPrevalence <- function(freq, neg, method="auto") {
 #' REQUIRED if performing prevalence-based testing.
 #'
 #' @param method (Optional). Default "prevalence".
-#' The method used to test for contaminants.
+#' The method used to test for contaminants. Currently the only method supported is prevalence.
 #' prevalence: Contaminants are identified by increased prevalence in negative controls.
 #'
 #' @param threshold (Optional). Default \code{0.5}.

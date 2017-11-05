@@ -4,8 +4,8 @@
 \alias{plot_frequency}
 \title{Plot frequencies as a function of input DNA concentration}
 \usage{
-plot_frequency(seqtab, taxa, conc, normalize = TRUE, showModels = TRUE,
-  log = TRUE, facet = TRUE)
+plot_frequency(seqtab, taxa, conc, neg = NULL, normalize = TRUE,
+  showModels = TRUE, log = TRUE, facet = TRUE)
 }
 \arguments{
 \item{seqtab}{(Required). \code{Integer matrix} or \code{phyloseq} object.
@@ -23,6 +23,11 @@ A quantitative measure of the concentration of amplified DNA in each sample prio
 All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
 If \code{seqtab} was provided as a \code{phyloseq} object, the name of the sample variable in the
 \code{phyloseq} object can be provided.}
+
+\item{neg}{(Optional). \code{logical}.
+TRUE if sample is a negative control, and FALSE if not.
+If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
+phyloseq object can be provided.}
 
 \item{normalize}{(Optional). Default TRUE.
 If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).

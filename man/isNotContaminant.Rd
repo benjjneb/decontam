@@ -22,7 +22,7 @@ The negative control samples. Extraction controls give the best results.
 REQUIRED if performing prevalence-based testing.}
 
 \item{method}{(Optional). Default "prevalence".
-The method used to test for contaminants.
+The method used to test for contaminants. Currently the only method supported is prevalence.
 prevalence: Contaminants are identified by increased prevalence in negative controls.}
 
 \item{threshold}{(Optional). Default \code{0.5}.
