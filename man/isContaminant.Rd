@@ -30,8 +30,8 @@ phyloseq object can be provided.}
 \describe{
   \item{frequency}{Contaminants are identified by frequency that varies inversely with sample DNA concentration.}
   \item{prevalence}{Contaminants are identified by increased prevalence in negative controls.}
-  \item{combined}{The combined frequency and prevalence p-value (Fisher's method) is used to identify contaminants.}
-  \item{minimum}{The minimum of the frequency and prevalence p-values is used to identify contaminants.}
+  \item{combined}{The frequency and prevalence probabilities are combined with Fisher's method and used to identify contaminants.}
+  \item{minimum}{The minimum of the frequency and prevalence probabilities is used to identify contaminants.}
   \item{either}{Contaminants are called if identified by either the frequency or prevalance methods.}
   \item{either}{Contaminants are called if identified by both the frequency and prevalance methods.}
 }
@@ -46,13 +46,11 @@ If \code{seqtab} was provided as a phyloseq object, the name of the appropriate 
 phyloseq object can be provided.}
 
 \item{batch.combine}{(Optional). Default "minimum".
-For each input sequence variant (or OTU) the p-values in each batch are combined into a single p-value that is then
-compared to the `code{threshold}` in order to call contaminants. Valid values: "minimum", "product", "fisher".
-
-The "frequency" and "prevalence" p-values are combined across batches independently if both are used.}
+For each input sequence variant (or OTU) the probabilities in each batch are combined into a single probability that is then
+compared to the `code{threshold}` in order to call contaminants. Valid values: "minimum", "product", "fisher".}
 
 \item{threshold}{(Optional). Default \code{0.1}.
-The p-value threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
+The probability threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
 alternate hypothesis (contaminant). A length-two vector can be provided when using the \code{either} or \code{both} methods:
 the first value is the threshold for the frequency test and the second for the prevalence test.}
 
@@ -65,7 +63,7 @@ If TRUE, the return value is a \code{data.frame} containing diagnostic informati
 If FALSE, the return value is a \code{logical} vector containing the binary contaminant classifications.}
 }
 \value{
-If \code{detailed=TRUE} a \code{data.frame} with additional information (such as the p-value) is returned.
+If \code{detailed=TRUE} a \code{data.frame} with classification information.
 If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
 }
 \description{

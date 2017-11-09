@@ -1,12 +1,13 @@
 Package: decontam
 Type: Package
 Title: Identify Contaminants in Marker-gene and Metagenomics Sequencing Data
-Version: 0.1.9
+Version: 0.20.0
+Date: 2017-10-09
 Author: Benjamin Callahan <benjamin.j.callahan@gmail.com>, Nicole Marie Davis
 Maintainer: Benjamin Callahan <benjamin.j.callahan@gmail.com>
 Description: Simple statistical identification of contaminating sequence features in 
     marker-gene or metagenomics data. Works on any kind of feature derived from 
-    environmental sequencing data.
+    environmental sequencing data (e.g. ASVs, OTUs, taxonomic groups, MAGs,...).
     Requires DNA quantitation data or sequenced negative control samples.
 Depends:
     R (>= 3.3.1),

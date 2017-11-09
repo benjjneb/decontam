@@ -4,7 +4,7 @@
 \alias{isNotContaminant}
 \title{Identify non-contaminant sequences.}
 \usage{
-isNotContaminant(seqtab, conc = NULL, neg = NULL, method = "prevalence",
+isNotContaminant(seqtab, neg = NULL, method = "prevalence",
   threshold = 0.5, normalize = TRUE, detailed = FALSE)
 }
 \arguments{
@@ -12,21 +12,15 @@ isNotContaminant(seqtab, conc = NULL, neg = NULL, method = "prevalence",
 A feature table recording the observed abundances of each sequence (or OTU) in each sample.
 Rows should correspond to samples, and columns to sequences (or OTUs).}
 
-\item{conc}{(Optional). \code{numeric}.
-A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
-All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
-REQUIRED if performing frequency-based testing.}
-
-\item{neg}{(Optional). \code{logical}
-The negative control samples. Extraction controls give the best results.
-REQUIRED if performing prevalence-based testing.}
+\item{neg}{(Required). \code{logical}
+The negative control samples. Extraction controls give the best results.}
 
 \item{method}{(Optional). Default "prevalence".
 The method used to test for contaminants. Currently the only method supported is prevalence.
 prevalence: Contaminants are identified by increased prevalence in negative controls.}
 
 \item{threshold}{(Optional). Default \code{0.5}.
-The p-value threshold below which (strictly less than) the null-hypothesis (a contaminant) should be rejected in favor of the
+The probability threshold below which (strictly less than) the null-hypothesis (a contaminant) should be rejected in favor of the
 alternate hypothesis (not a contaminant).}
 
 \item{normalize}{(Optional). Default TRUE.

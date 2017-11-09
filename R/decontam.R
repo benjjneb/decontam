@@ -24,8 +24,8 @@
 #' \describe{
 #'   \item{frequency}{Contaminants are identified by frequency that varies inversely with sample DNA concentration.}
 #'   \item{prevalence}{Contaminants are identified by increased prevalence in negative controls.}
-#'   \item{combined}{The combined frequency and prevalence p-value (Fisher's method) is used to identify contaminants.}
-#'   \item{minimum}{The minimum of the frequency and prevalence p-values is used to identify contaminants.}
+#'   \item{combined}{The frequency and prevalence probabilities are combined with Fisher's method and used to identify contaminants.}
+#'   \item{minimum}{The minimum of the frequency and prevalence probabilities is used to identify contaminants.}
 #'   \item{either}{Contaminants are called if identified by either the frequency or prevalance methods.}
 #'   \item{either}{Contaminants are called if identified by both the frequency and prevalance methods.}
 #' }
@@ -41,13 +41,11 @@
 #'
 #'
 #' @param batch.combine (Optional). Default "minimum".
-#' For each input sequence variant (or OTU) the p-values in each batch are combined into a single p-value that is then
+#' For each input sequence variant (or OTU) the probabilities in each batch are combined into a single probability that is then
 #' compared to the `code{threshold}` in order to call contaminants. Valid values: "minimum", "product", "fisher".
 #'
-#' The "frequency" and "prevalence" p-values are combined across batches independently if both are used.
-#'
 #' @param threshold (Optional). Default \code{0.1}.
-#' The p-value threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
+#' The probability threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
 #' alternate hypothesis (contaminant). A length-two vector can be provided when using the \code{either} or \code{both} methods:
 #' the first value is the threshold for the frequency test and the second for the prevalence test.
 #'
@@ -60,7 +58,7 @@
 #' If FALSE, the return value is a \code{logical} vector containing the binary contaminant classifications.
 #'
 #' @return
-#' If \code{detailed=TRUE} a \code{data.frame} with additional information (such as the p-value) is returned.
+#' If \code{detailed=TRUE} a \code{data.frame} with classification information.
 #' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
 #'
 #' @importFrom methods as
@@ -183,13 +181,14 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
   isC[is.na(isC)] <- FALSE # NA pvals are not called contaminants
   # Make return value
   if(detailed) {
-    rval <- data.frame(freq=apply(seqtab,2,mean), prev=apply(seqtab>0,2,sum), p.freq=p.freq, p.prev=p.prev, pval=pval, contaminant=isC)
+    rval <- data.frame(freq=apply(seqtab,2,mean), prev=apply(seqtab>0,2,sum), p.freq=p.freq, p.prev=p.prev, p=pval, contaminant=isC)
   } else {
     rval <- isC
   }
   return(rval)
 }
 #' @importFrom stats lm
+#' @importFrom stats pf
 #'
 #' @keywords internal
 isContaminantFrequency <- function(freq, conc) {
@@ -207,10 +206,8 @@ isContaminantFrequency <- function(freq, conc) {
   }
   return(pval)
 }
-#' importFrom stats chisq.test
-#' importFrom stats fisher.test
-#'
-#' @export
+#' @importFrom stats fisher.test
+#' @importFrom stats prop.test
 #'
 #' @keywords internal
 isContaminantPrevalence <- function(freq, neg, method="auto") {
@@ -233,7 +230,7 @@ isContaminantPrevalence <- function(freq, neg, method="auto") {
       pval <- tryCatch(prop.test(tab, alternative="greater")$p.value, warning=function(w) fisher.pval(tab, alternative="greater"))
     }
     if(is.na(pval)) {
-      warning("NA p-value calculated.")
+      warning("NA probability calculated.")
     }
   } else {
     pval <- NA
@@ -260,21 +257,15 @@ isContaminantPrevalence <- function(freq, neg, method="auto") {
 #' A feature table recording the observed abundances of each sequence (or OTU) in each sample.
 #' Rows should correspond to samples, and columns to sequences (or OTUs).
 #'
-#' @param conc (Optional). \code{numeric}.
-#' A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
-#' All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
-#' REQUIRED if performing frequency-based testing.
-#'
-#' @param neg (Optional). \code{logical}
+#' @param neg (Required). \code{logical}
 #' The negative control samples. Extraction controls give the best results.
-#' REQUIRED if performing prevalence-based testing.
 #'
 #' @param method (Optional). Default "prevalence".
 #' The method used to test for contaminants. Currently the only method supported is prevalence.
 #' prevalence: Contaminants are identified by increased prevalence in negative controls.
 #'
 #' @param threshold (Optional). Default \code{0.5}.
-#' The p-value threshold below which (strictly less than) the null-hypothesis (a contaminant) should be rejected in favor of the
+#' The probability threshold below which (strictly less than) the null-hypothesis (a contaminant) should be rejected in favor of the
 #' alternate hypothesis (not a contaminant).
 #'
 #' @param normalize (Optional). Default TRUE.
@@ -295,9 +286,9 @@ isContaminantPrevalence <- function(freq, neg, method="auto") {
 #' \dontrun{
 #'   isNotContaminant(st, conc, threshold=0.05)
 #' }
-isNotContaminant <- function(seqtab, conc=NULL, neg=NULL, method="prevalence", threshold = 0.5, normalize=TRUE, detailed=FALSE) {
+isNotContaminant <- function(seqtab, neg=NULL, method="prevalence", threshold = 0.5, normalize=TRUE, detailed=FALSE) {
   if(!method %in% c("prevalence")) stop("isNotContaminant only supports the following methods: prevalence")
-  df <- isContaminant(seqtab, conc=conc, neg=neg, method=method, threshold=threshold, normalize=normalize, detailed=TRUE)
+  df <- isContaminant(seqtab, conc=NULL, neg=neg, method=method, threshold=threshold, normalize=normalize, detailed=TRUE)
   df$p.freq <- 1-df$p.freq
   df$p.prev <- 1-df$p.prev
   # Calculate overall p-value
@@ -305,7 +296,7 @@ isNotContaminant <- function(seqtab, conc=NULL, neg=NULL, method="prevalence", t
   # Make contaminant calls
   isNotC <- (pval < threshold)
   isNotC[is.na(isNotC)] <- FALSE # NA pvals are not called not-contaminants
-  df$pval <- pval
+  df$p <- pval
   df$contaminant <- NULL
   df$not.contaminant <- isNotC
   # Make return value
@@ -323,9 +314,10 @@ list_along <- function(nm) {
   names(rval) <- nm
 }
 
-fish.combine <- function(vec, na.replace=0.5) {
+fish.combine <- function(vec, na.replace=NA) {
   vec[is.na(vec)] <- na.replace
-  if(any(vec<0 | vec>1)) stop("fish.combine expects p-values between 0 and 1.")
+  vec <- vec[!is.na(vec)]
+  if(any(vec<0 | vec>1)) stop("fish.combine expects values between 0 and 1.")
   p <- prod(vec)
   pchisq(-2*log(p), df=2*length(vec), lower.tail=FALSE)
 }
