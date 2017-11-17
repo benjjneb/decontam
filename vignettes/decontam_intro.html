@@ -114,7 +114,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Introduction to decontam</h1>
 <p class="author-name">Benjamin Callahan, Nicole Davis</p>
-<h4 class="date"><em>Thu Nov 9 11:42:31 2017</em></h4>
+<h4 class="date"><em>Fri Nov 17 14:41:40 2017</em></h4>
 
 </div>
 
@@ -194,7 +194,7 @@ head(contamdf.freq)</code></pre>
 ## Seq4 0.067588419  519 9.999998e-01     NA 9.999998e-01       FALSE
 ## Seq5 0.045174743  354 1.000000e+00     NA 1.000000e+00       FALSE
 ## Seq6 0.040417101  538 1.000000e+00     NA 1.000000e+00       FALSE</code></pre>
-<p>This calculation has returned a <code>data.frame</code> with several columns, the most important being <code>$p</code> which containts the probability that was used for classifying contaminants, and <code>$contaminant</code> which contains <code>TRUE</code>/<code>FALSE</code> classification values with <code>TRUE</code> indicating that the statistical evidence that the associated sequence feature is a contaminant exceeds the user-settable threshold. As we did not specify the threshold, the default value of <code>threshold = 0.1</code> was used, and <code>$contaminant=TRUE</code> if <code>$pval &lt; 0.1</code>.</p>
+<p>This calculation has returned a <code>data.frame</code> with several columns, the most important being <code>$p</code> which containts the probability that was used for classifying contaminants, and <code>$contaminant</code> which contains <code>TRUE</code>/<code>FALSE</code> classification values with <code>TRUE</code> indicating that the statistical evidence that the associated sequence feature is a contaminant exceeds the user-settable threshold. As we did not specify the threshold, the default value of <code>threshold = 0.1</code> was used, and <code>$contaminant=TRUE</code> if <code>$p &lt; 0.1</code>.</p>
 <pre class="r"><code>table(contamdf.freq$contaminant)</code></pre>
 <pre><code>## 
 ## FALSE  TRUE 
