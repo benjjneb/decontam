@@ -1,6 +1,6 @@
 ## Documentation
 
-**An [introductory vignette](vignettes/decontam_intro.html) demonstrating how to use the decontam package to identify contaminants.**
+**An [introductory vignette](https://benjjneb.github.io/decontam/vignettes/decontam_intro.html) demonstrating how to use the decontam package to identify contaminants.**
 
 Coming soon: Full publication with benchmarking demonstrating how `decontam`-inating your data removes reagent sequences, reduces batch effects, and prevents false-positive assocations.
 

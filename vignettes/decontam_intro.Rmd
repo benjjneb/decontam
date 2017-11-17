@@ -72,7 +72,7 @@ contamdf.freq <- isContaminant(ps, method="frequency", conc="quant_reading")
 head(contamdf.freq)
 ```
 
-This calculation has returned a `data.frame` with several columns, the most important being `$p` which containts the probability that was used for classifying contaminants, and `$contaminant` which contains `TRUE`/`FALSE` classification values with `TRUE` indicating that the statistical evidence that the associated sequence feature is a contaminant exceeds the user-settable threshold. As we did not specify the threshold, the default value of `threshold = 0.1` was used, and `$contaminant=TRUE` if `$pval < 0.1`.
+This calculation has returned a `data.frame` with several columns, the most important being `$p` which containts the probability that was used for classifying contaminants, and `$contaminant` which contains `TRUE`/`FALSE` classification values with `TRUE` indicating that the statistical evidence that the associated sequence feature is a contaminant exceeds the user-settable threshold. As we did not specify the threshold, the default value of `threshold = 0.1` was used, and `$contaminant=TRUE` if `$p < 0.1`.
 
 ```{r table}
 table(contamdf.freq$contaminant)
