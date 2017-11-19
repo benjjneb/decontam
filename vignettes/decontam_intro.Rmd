@@ -10,9 +10,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}  
 ---
 
-# Identifying contaminants in marker-gene or metagenomics data
+# Identifying contaminants in marker-gene and metagenomics data
 
-Introduction to [the decontam R package](https://github.com/benjjneb/decontam). User support, feature requests, comments and suggestions welcome at [the decontam issues tracker](https://github.com/benjjneb/decontam/issues).
+Introduction to [the decontam R package](https://github.com/benjjneb/decontam). User support, feature requests, comments and suggestions are welcome at [the decontam issues tracker](https://github.com/benjjneb/decontam/issues). The [preprint introducing decontam](https://www.biorxiv.org/content/early/2017/11/17/221499) includes performance benchmarking, and demonstrates the benefits of `decontam`-inating your data for more accurate profiling of microbial communities.
 
 # Introduction
 
@@ -41,7 +41,7 @@ ps <- readRDS(system.file("extdata", "MUClite.rds", package="decontam"))
 ps
 ```
 
-This phyloseq objects has a table of 1951 amplicon sequence variants (ASVs) inferred by [the DADA2 algorithm](http://benjjneb.github.io/dada2/) from amplicon sequencing data of the V4 region of the 16S rRNA gene. The sample data includes the necessary metadata information:
+This phyloseq objects has a table of 1951 amplicon sequence variants (ASVs) inferred by [the DADA2 algorithm](http://benjjneb.github.io/dada2/) from amplicon sequencing data of the V4 region of the 16S rRNA gene. The phyloseq objects also includes the sample metadata information needed to use `decontam`:
 
 ```{r see-meta}
 sample_variables(ps)
@@ -79,7 +79,7 @@ table(contamdf.freq$contaminant)
 head(which(contamdf.freq$contaminant))
 ```
 
-Just 58 out of the 1901 ASVs were classified as contaminants, but this includes some abundant sequences, including the third (!) most abundant sequence.
+Just 58 out of the 1901 ASVs were classified as contaminants, but this includes some very abundant sequences, including the third (!) most abundant ASV.
 
 Let's take a look at what a clear non-contaminant (the 1st ASV), and a clear contaminant (the 3rd ASV), look like:
 ```{r plot-abundance, warning=FALSE}
@@ -96,14 +96,16 @@ plot_frequency(ps, taxa_names(ps)[sample(which(contamdf.freq$contaminant),3)], c
 
 Those all look like contaminants!
 
-And now that we have identified likely contaminants, let's remove them from the phyloseq object:
+Now that we have identified likely contaminants, let's remove them from the phyloseq object:
 ```{r remove}
 ps
 ps.noncontam <- prune_taxa(!contamdf.freq$contaminant, ps)
 ps.noncontam
 ```
 
-And off we can go with the contaminant-filtered data.
+And off we go with analysis of the contaminant-filtered data! 
+
+*See [the phyloseq web site](https://joey711.github.io/phyloseq/) for documentation of the many powerful analyses available through the phyloseq R package.*
 
 # Identify Contaminants - Prevalence
 
@@ -119,7 +121,7 @@ head(which(contamdf.prev$contaminant))
 
 Prevalence-based contaminant identification has identified a larger number of contaminants, `r sum(contamdf.prev$contaminant)`, than did the frequency-based method, `r sum(contamdf.freq$contaminant)`, in this dataset, but also missed the very clear and highly abundant contaminant `Seq3`, because `Seq3` was present in almost all samples - negative and positive.
 
-Note that as before, the default threshold for a contaminant is that it reaches a probability of 0.1 in the statistical test being performed. In the prevalence test there is a special value worth knowing, `threshold=0.5`, that will identify as contaminants all sequences thare are more prevalent in negative controls than in positive samples. It will often be worth using this threshold rather than the default:
+Note that as before, the default threshold for a contaminant is that it reaches a probability of 0.1 in the statistical test being performed. In the prevalence test there is a special value worth knowing, `threshold=0.5`, that will identify as contaminants all sequences thare are more prevalent in negative controls than in positive samples. Let's try using this more aggressive classification threshold rather than the default:
 
 ```{r prevalence-05}
 contamdf.prev05 <- isContaminant(ps, method="prevalence", neg="is.neg", threshold=0.5)

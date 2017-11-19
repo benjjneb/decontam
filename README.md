@@ -2,7 +2,9 @@
 
 **An [introductory vignette](https://benjjneb.github.io/decontam/vignettes/decontam_intro.html) demonstrating how to use the decontam package to identify contaminants.**
 
-Coming soon: Full publication with benchmarking demonstrating how `decontam`-inating your data removes reagent sequences, reduces batch effects, and prevents false-positive assocations.
+**The [preprint introducing decontam](https://www.biorxiv.org/content/early/2017/11/17/221499) with benchmarking demonstrating how `decontam`-inating your data removes reagent sequences, improves accuracy, reduces batch effects, and prevents false-positive assocations.**
+
+More documentation available through the R help interface (e.g. `?isContaminant`) and at [the decontam web site](https://benjjneb.github.io/decontam).
 
 ## Installation
 
