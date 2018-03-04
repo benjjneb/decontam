@@ -18,10 +18,10 @@
 #' If \code{seqtab} was provided as a \code{phyloseq} object, the name of the sample variable in the
 #' \code{phyloseq} object can be provided.
 #'
-#' @param neg (Optional). \code{logical}.
+#' @param neg (Optional). \code{logical}. Default NULL.
 #' TRUE if sample is a negative control, and FALSE if not.
 #' If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
-#' phyloseq object can be provided.
+#' phyloseq object can be provided. NULL indicates no samples should be condired negative controls.
 #'
 #' @param normalize (Optional). Default TRUE.
 #' If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
@@ -66,7 +66,7 @@ plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showMod
   }
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
   if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
-  if(missing(neg)) neg <- rep(FALSE, length(conc)) # Don't ignore any samples
+  if(is.null(neg)) neg <- rep(FALSE, length(conc)) # Don't ignore any samples
   if(is.character(taxa)) {
     seqtab <- seqtab[,colnames(seqtab) %in% taxa,drop=FALSE]
   } else {
@@ -76,9 +76,10 @@ plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showMod
   if(ntax.plot == 0) stop("None of the provided taxa were present in seqtab.")
   # Prepare plotting data.frame
   if(is.null(ps)) {
-    plotdf <- cbind(data.frame(seqtab), DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
+    plotdf <- cbind(data.frame(seqtab, check.names=FALSE), DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
   } else {
-    plotdf <- cbind(data.frame(seqtab), data.frame(sample_data(ps)), DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
+    plotdf <- cbind(data.frame(seqtab, check.names=FALSE), data.frame(sample_data(ps), check.names=FALSE),
+                    DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
   }
   plot_melt <- melt(plotdf, measure.vars=1:ntax.plot, variable.name="taxa", value.name="taxon_abundance")
 

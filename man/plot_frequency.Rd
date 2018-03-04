@@ -24,10 +24,10 @@ All values must be greater than zero. Zero is assumed to represent the complete 
 If \code{seqtab} was provided as a \code{phyloseq} object, the name of the sample variable in the
 \code{phyloseq} object can be provided.}
 
-\item{neg}{(Optional). \code{logical}.
+\item{neg}{(Optional). \code{logical}. Default NULL.
 TRUE if sample is a negative control, and FALSE if not.
 If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
-phyloseq object can be provided.}
+phyloseq object can be provided. NULL indicates no samples should be condired negative controls.}
 
 \item{normalize}{(Optional). Default TRUE.
 If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
