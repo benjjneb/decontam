@@ -68,12 +68,14 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   conc <- c(10, 10, 31, 5, 140.1)
-#'   neg <- c(TRUE, TRUE, FALSE, TRUE, FALSE)
-#'   isContaminant(st, conc=conc, method="frequency", threshold=0.2)
-#'   isContaminant(st, conc=conc, neg=neg, method="both", threshold=c(0.1,0.5))
-#' }
+#' st <- readRDS(system.file("extdata", "st.rds", package="decontam"))
+#' # conc should be positive and non-zero
+#' conc <- c(6413, 3581.0, 5375, 4107, 4291, 4260, 4171, 2765, 33, 48)
+#' neg <- c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE)
+#' # Use frequency or frequency and prevalence to identify contaminants
+#' isContaminant(st, conc=conc, method="frequency", threshold=0.2)
+#' isContaminant(st, conc=conc, neg=neg, method="both", threshold=c(0.1,0.5))
+#'
 isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, batch.combine="minimum", threshold = 0.1, normalize=TRUE, detailed=TRUE) {
   # Validate input
   if(is(seqtab, "phyloseq")) {
@@ -286,9 +288,10 @@ isContaminantPrevalence <- function(freq, neg, method="auto") {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   isNotContaminant(st, conc, threshold=0.05)
-#' }
+#' st <- readRDS(system.file("extdata", "st.rds", package="decontam"))
+#' samdf <- readRDS(system.file("extdata", "samdf.rds", package="decontam"))
+#' isNotContaminant(st, samdf$quant_reading, threshold=0.05)
+#'
 isNotContaminant <- function(seqtab, neg=NULL, method="prevalence", threshold = 0.5, normalize=TRUE, detailed=FALSE) {
   if(!method %in% c("prevalence")) stop("isNotContaminant only supports the following methods: prevalence")
   df <- isContaminant(seqtab, conc=NULL, neg=neg, method=method, threshold=threshold, normalize=normalize, detailed=TRUE)

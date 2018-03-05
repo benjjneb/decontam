@@ -42,7 +42,8 @@ here is that sequences **are** contaminants. This function is intended for use o
 in which a large proportion of the sequences are likely to be contaminants.
 }
 \examples{
-\dontrun{
-  isNotContaminant(st, conc, threshold=0.05)
-}
+st <- readRDS(system.file("extdata", "st.rds", package="decontam"))
+samdf <- readRDS(system.file("extdata", "samdf.rds", package="decontam"))
+isNotContaminant(st, samdf$quant_reading, threshold=0.05)
+
 }

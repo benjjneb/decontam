@@ -57,8 +57,8 @@ Plots the frequencies of selected sequence features vs. each sample's DNA concen
 # MUC is a phyloseq object, MUC.conc is the vector of sample concentrations
 MUC <- readRDS(system.file("extdata", "MUClite.rds", package="decontam"))
 MUC.conc <- readRDS(system.file("extdata", "MUCconc.rds", package="decontam"))
-plot_frequency(MUC, "Seq1", conc=conc)
-# The concentration is also stored as the quant_reading sample variable in MUC
+plot_frequency(MUC, "Seq1", conc=MUC.conc)
+# The concentration can also be reference directly as the quant_reading sample variable in MUC
 plot_frequency(MUC, "Seq1", conc="quant_reading")
 plot_frequency(MUC, c("Seq1", "Seq10", "Seq33"), conc="quant_reading", log=FALSE)
 

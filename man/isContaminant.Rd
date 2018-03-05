@@ -71,10 +71,12 @@ The frequency of each sequence (or OTU) in the input feature table as a function
 amplified DNA in each sample is used to identify contaminant sequences.
 }
 \examples{
-\dontrun{
-  conc <- c(10, 10, 31, 5, 140.1)
-  neg <- c(TRUE, TRUE, FALSE, TRUE, FALSE)
-  isContaminant(st, conc=conc, method="frequency", threshold=0.2)
-  isContaminant(st, conc=conc, neg=neg, method="both", threshold=c(0.1,0.5))
-}
+st <- readRDS(system.file("extdata", "st.rds", package="decontam"))
+# conc should be positive and non-zero
+conc <- c(6413, 3581.0, 5375, 4107, 4291, 4260, 4171, 2765, 33, 48)
+neg <- c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE)
+# Use frequency or frequency and prevalence to identify contaminants
+isContaminant(st, conc=conc, method="frequency", threshold=0.2)
+isContaminant(st, conc=conc, neg=neg, method="both", threshold=c(0.1,0.5))
+
 }
