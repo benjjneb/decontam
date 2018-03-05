@@ -15,6 +15,11 @@ Depends:
 Imports:
     ggplot2 (>= 2.1.0),
     reshape2 (>= 1.4.1)
+Suggests:
+    BiocStyle,
+    knitr,
+    rmarkdown,
+    phyloseq
 License: Artistic-2.0
 Encoding: UTF-8
 VignetteBuilder: knitr

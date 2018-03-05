@@ -33,7 +33,7 @@ phyloseq object can be provided.}
   \item{combined}{The frequency and prevalence probabilities are combined with Fisher's method and used to identify contaminants.}
   \item{minimum}{The minimum of the frequency and prevalence probabilities is used to identify contaminants.}
   \item{either}{Contaminants are called if identified by either the frequency or prevalance methods.}
-  \item{either}{Contaminants are called if identified by both the frequency and prevalance methods.}
+  \item{both}{Contaminants are called if identified by both the frequency and prevalance methods.}
 }
 If \code{method} is not specified, frequency, prevalence or combined will be automatically selected based on
 whether just \code{conc}, just \code{neg}, or both were provided.}
@@ -72,7 +72,9 @@ amplified DNA in each sample is used to identify contaminant sequences.
 }
 \examples{
 \dontrun{
-  isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
-  isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="both", threshold=c(0.1,0.5))
+  conc <- c(10, 10, 31, 5, 140.1)
+  neg <- c(TRUE, TRUE, FALSE, TRUE, FALSE)
+  isContaminant(st, conc=conc, method="frequency", threshold=0.2)
+  isContaminant(st, conc=conc, neg=neg, method="both", threshold=c(0.1,0.5))
 }
 }

@@ -38,8 +38,14 @@
 #' @param facet (Optional). Default TRUE.
 #' If TRUE, multiple sequence features will be plotted in separate facets.
 #'
+#' @return A \code{\link{ggplot}2} object.
+#'  Will be rendered to default device if \code{\link{print}ed},
+#'  or can be stored and further modified.
+#'  See \code{\link{ggsave}} for additional options.
+#'
 #' @importFrom methods as
 #' @importFrom methods is
+#' @importFrom stats pchisq
 #' @importFrom reshape2 melt
 #' @importFrom stats lm
 #' @import ggplot2
@@ -47,12 +53,14 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   # MUC is a phyloseq object
-#'   plot_frequency(MUC,"Seq1",conc="quant_reading")
-#'   plot_frequency(MUC,c("Seq1", "Seq10", "Seq33"),conc=sample_data(MUC)$quant_reading)
-#'   plot_frequency(MUC,"Seq1",conc="quant_reading", normalize=FALSE, log=FALSE)
-#' }
+#' # MUC is a phyloseq object, MUC.conc is the vector of sample concentrations
+#' MUC <- readRDS(system.file("extdata", "MUClite.rds", package="decontam"))
+#' MUC.conc <- readRDS(system.file("extdata", "MUCconc.rds", package="decontam"))
+#' plot_frequency(MUC, "Seq1", conc=conc)
+#' # The concentration is also stored as the quant_reading sample variable in MUC
+#' plot_frequency(MUC, "Seq1", conc="quant_reading")
+#' plot_frequency(MUC, c("Seq1", "Seq10", "Seq33"), conc="quant_reading", log=FALSE)
+#'
 plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showModels=TRUE, log=TRUE, facet=TRUE){
   # Validate input
   if(is(seqtab, "phyloseq")) {
@@ -78,7 +86,7 @@ plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showMod
   if(is.null(ps)) {
     plotdf <- cbind(data.frame(seqtab, check.names=FALSE), DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
   } else {
-    plotdf <- cbind(data.frame(seqtab, check.names=FALSE), data.frame(sample_data(ps), check.names=FALSE),
+    plotdf <- cbind(data.frame(seqtab, check.names=FALSE), as(ps@sam_data, "data.frame"),
                     DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
   }
   plot_melt <- melt(plotdf, measure.vars=1:ntax.plot, variable.name="taxa", value.name="taxon_abundance")

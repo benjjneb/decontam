@@ -27,7 +27,7 @@
 #'   \item{combined}{The frequency and prevalence probabilities are combined with Fisher's method and used to identify contaminants.}
 #'   \item{minimum}{The minimum of the frequency and prevalence probabilities is used to identify contaminants.}
 #'   \item{either}{Contaminants are called if identified by either the frequency or prevalance methods.}
-#'   \item{either}{Contaminants are called if identified by both the frequency and prevalance methods.}
+#'   \item{both}{Contaminants are called if identified by both the frequency and prevalance methods.}
 #' }
 #' If \code{method} is not specified, frequency, prevalence or combined will be automatically selected based on
 #' whether just \code{conc}, just \code{neg}, or both were provided.
@@ -63,13 +63,16 @@
 #'
 #' @importFrom methods as
 #' @importFrom methods is
+#' @importFrom stats pchisq
 #'
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'   isContaminant(st, conc=c(10, 10, 31, 5, 140.1), method="frequency", threshold=0.2)
-#'   isContaminant(st, conc=c(10, 10, 31, 5, 140.1), neg=c(TRUE, TRUE, FALSE, TRUE, FALSE), method="both", threshold=c(0.1,0.5))
+#'   conc <- c(10, 10, 31, 5, 140.1)
+#'   neg <- c(TRUE, TRUE, FALSE, TRUE, FALSE)
+#'   isContaminant(st, conc=conc, method="frequency", threshold=0.2)
+#'   isContaminant(st, conc=conc, neg=neg, method="both", threshold=c(0.1,0.5))
 #' }
 isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, batch.combine="minimum", threshold = 0.1, normalize=TRUE, detailed=TRUE) {
   # Validate input
@@ -308,12 +311,15 @@ isNotContaminant <- function(seqtab, neg=NULL, method="prevalence", threshold = 
   return(rval)
 }
 
+#' @keywords internal
 list_along <- function(nm) {
   if(!is.character(nm)) stop("list_along requires character input.")
   rval <- vector("list", length(nm))
   names(rval) <- nm
 }
 
+#' @keywords internal
+#' @importFrom stats pchisq
 fish.combine <- function(vec, na.replace=NA) {
   vec[is.na(vec)] <- na.replace
   vec <- vec[!is.na(vec)]
@@ -322,6 +328,7 @@ fish.combine <- function(vec, na.replace=NA) {
   pchisq(-2*log(p), df=2*length(vec), lower.tail=FALSE)
 }
 
+#' @keywords internal
 getFromPS <- function(ps, nm) {
   i <- match(nm, ps@sam_data@names)
   if(is.na(i)) stop(paste(nm, "is not a valid sample-variable in the provided phyloseq object."))
