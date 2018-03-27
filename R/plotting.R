@@ -46,6 +46,7 @@
 #' @importFrom methods as
 #' @importFrom methods is
 #' @importFrom stats pchisq
+#' @importFrom stats predict
 #' @importFrom reshape2 melt
 #' @importFrom stats lm
 #' @import ggplot2

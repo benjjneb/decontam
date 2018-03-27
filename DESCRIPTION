@@ -1,7 +1,7 @@
 Package: decontam
 Type: Package
 Title: Identify Contaminants in Marker-gene and Metagenomics Sequencing Data
-Version: 0.99.1
+Version: 0.99.2
 Date: 2018-03-05
 Author: Benjamin Callahan <benjamin.j.callahan@gmail.com>, Nicole Marie Davis
 Maintainer: Benjamin Callahan <benjamin.j.callahan@gmail.com>
@@ -10,11 +10,12 @@ Description: Simple statistical identification of contaminating sequence feature
     environmental sequencing data (e.g. ASVs, OTUs, taxonomic groups, MAGs,...).
     Requires DNA quantitation data or sequenced negative control samples.
 Depends:
-    R (>= 3.3.1),
-    methods (>= 3.3.1)
+    R (>= 3.4.1),
+    methods (>= 3.4.1)
 Imports:
     ggplot2 (>= 2.1.0),
-    reshape2 (>= 1.4.1)
+    reshape2 (>= 1.4.1),
+    stats
 Suggests:
     BiocStyle,
     knitr,
