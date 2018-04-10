@@ -4,9 +4,10 @@
 \alias{isContaminant}
 \title{Identify contaminant sequences.}
 \usage{
-isContaminant(seqtab, conc = NULL, neg = NULL, method = NULL,
-  batch = NULL, batch.combine = "minimum", threshold = 0.1,
-  normalize = TRUE, detailed = TRUE)
+isContaminant(seqtab, conc = NULL, neg = NULL, method = c("auto",
+  "frequency", "prevalence", "combined", "minimum", "either", "both"),
+  batch = NULL, batch.combine = c("minimum", "product", "fisher"),
+  threshold = 0.1, normalize = TRUE, detailed = TRUE)
 }
 \arguments{
 \item{seqtab}{(Required). \code{Integer matrix} or \code{phyloseq} object.
@@ -28,15 +29,15 @@ phyloseq object can be provided.}
 
 \item{method}{(Optional). \code{character}. The method used to test for contaminants.
 \describe{
+  \item{auto}{(Default). frequency, prevalence or combined will be automatically selected based on whether
+              just \code{conc}, just \code{neg}, or both were provided.}
   \item{frequency}{Contaminants are identified by frequency that varies inversely with sample DNA concentration.}
   \item{prevalence}{Contaminants are identified by increased prevalence in negative controls.}
   \item{combined}{The frequency and prevalence probabilities are combined with Fisher's method and used to identify contaminants.}
   \item{minimum}{The minimum of the frequency and prevalence probabilities is used to identify contaminants.}
   \item{either}{Contaminants are called if identified by either the frequency or prevalance methods.}
   \item{both}{Contaminants are called if identified by both the frequency and prevalance methods.}
-}
-If \code{method} is not specified, frequency, prevalence or combined will be automatically selected based on
-whether just \code{conc}, just \code{neg}, or both were provided.}
+}}
 
 \item{batch}{(Optional). \code{factor}, or any type coercible to a \code{factor}. Default NULL.
 If provided, should be a vector of length equal to the number of input samples which specifies which batch
@@ -46,8 +47,9 @@ If \code{seqtab} was provided as a phyloseq object, the name of the appropriate 
 phyloseq object can be provided.}
 
 \item{batch.combine}{(Optional). Default "minimum".
-For each input sequence variant (or OTU) the probabilities in each batch are combined into a single probability that is then
-compared to the `code{threshold}` in order to call contaminants. Valid values: "minimum", "product", "fisher".}
+For each input sequence variant (or OTU) the probabilities calculated in each batch are combined into a
+single probability that is compared to `code{threshold}` to classify contaminants.
+Valid values: "minimum", "product", "fisher".}
 
 \item{threshold}{(Optional). Default \code{0.1}.
 The probability threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the

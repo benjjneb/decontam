@@ -29,19 +29,19 @@ TRUE if sample is a negative control, and FALSE if not.
 If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
 phyloseq object can be provided. NULL indicates no samples should be condired negative controls.}
 
-\item{normalize}{(Optional). Default TRUE.
+\item{normalize}{(Optional). \code{logical}. Default TRUE.
 If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
 If FALSE, no normalization is performed (the data should already be frequencies or counts from
 equal-depth samples).}
 
-\item{showModels}{(Optional). Default TRUE.
+\item{showModels}{(Optional). \code{logical}. Default TRUE.
 If TRUE, the contaminant (red, dashed line) and non-contaminant (black, solid line) models are
 shown in the plot.}
 
-\item{log}{(Optional). Default TRUE.
+\item{log}{(Optional). \code{logical}. Default TRUE.
 If TRUE, the axes are log10-scaled.}
 
-\item{facet}{(Optional). Default TRUE.
+\item{facet}{(Optional). \code{logical}. Default TRUE.
 If TRUE, multiple sequence features will be plotted in separate facets.}
 }
 \value{

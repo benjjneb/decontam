@@ -22,6 +22,8 @@
 #'
 #' @param method (Optional). \code{character}. The method used to test for contaminants.
 #' \describe{
+#'   \item{auto}{(Default). frequency, prevalence or combined will be automatically selected based on whether
+#'               just \code{conc}, just \code{neg}, or both were provided.}
 #'   \item{frequency}{Contaminants are identified by frequency that varies inversely with sample DNA concentration.}
 #'   \item{prevalence}{Contaminants are identified by increased prevalence in negative controls.}
 #'   \item{combined}{The frequency and prevalence probabilities are combined with Fisher's method and used to identify contaminants.}
@@ -29,8 +31,6 @@
 #'   \item{either}{Contaminants are called if identified by either the frequency or prevalance methods.}
 #'   \item{both}{Contaminants are called if identified by both the frequency and prevalance methods.}
 #' }
-#' If \code{method} is not specified, frequency, prevalence or combined will be automatically selected based on
-#' whether just \code{conc}, just \code{neg}, or both were provided.
 #'
 #' @param batch (Optional). \code{factor}, or any type coercible to a \code{factor}. Default NULL.
 #' If provided, should be a vector of length equal to the number of input samples which specifies which batch
@@ -41,8 +41,9 @@
 #'
 #'
 #' @param batch.combine (Optional). Default "minimum".
-#' For each input sequence variant (or OTU) the probabilities in each batch are combined into a single probability that is then
-#' compared to the `code{threshold}` in order to call contaminants. Valid values: "minimum", "product", "fisher".
+#' For each input sequence variant (or OTU) the probabilities calculated in each batch are combined into a
+#' single probability that is compared to `code{threshold}` to classify contaminants.
+#' Valid values: "minimum", "product", "fisher".
 #'
 #' @param threshold (Optional). Default \code{0.1}.
 #' The probability threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
@@ -76,7 +77,10 @@
 #' isContaminant(st, conc=conc, method="frequency", threshold=0.2)
 #' isContaminant(st, conc=conc, neg=neg, method="both", threshold=c(0.1,0.5))
 #'
-isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, batch.combine="minimum", threshold = 0.1, normalize=TRUE, detailed=TRUE) {
+isContaminant <- function(seqtab, conc=NULL, neg=NULL,
+                          method=c("auto", "frequency", "prevalence", "combined", "minimum", "either", "both"),
+                          batch=NULL, batch.combine=c("minimum", "product", "fisher"),
+                          threshold = 0.1, normalize=TRUE, detailed=TRUE) {
   # Validate input
   if(is(seqtab, "phyloseq")) {
     ps <- seqtab
@@ -88,13 +92,11 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
   }
   if(!(is(seqtab, "matrix") && is.numeric(seqtab))) stop("seqtab must be a numeric matrix.")
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
-  if(missing(method)) {
+  method <- match.arg(method)
+  if(method == "auto") {
     if(!missing(conc) && missing(neg)) method <- "frequency"
     else if(missing(conc) && !missing(neg)) method <- "prevalence"
     else method <- "combined"
-  }
-  if(!method %in% c("frequency", "prevalence", "combined", "minimum", "either", "both")) {
-    stop("Valid method arguments: frequency, prevalence, combined, minimum, either, both")
   }
   do.freq <- FALSE; do.prev <- FALSE; p.freq <- NA; p.prev <- NA
   if(method %in% c("frequency", "minimum", "combined", "minimum", "either", "both")) do.freq <- TRUE
@@ -124,7 +126,7 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL, method=NULL, batch=NULL, 
     batch <- factor(rep(1, nrow(seqtab)))
   }
   if(nrow(seqtab) != length(batch)) stop("The length of batch must match the number of samples (the rows of seqtab).")
-  if(!batch.combine %in% c("minimum", "product", "fisher")) stop("Invalid batch.combine value.")
+  batch.combine <- match.arg(batch.combine)
   batch <- factor(batch)
   # Loop over batches
   p.freqs <- matrix(NA, nrow=nlevels(batch), ncol=ncol(seqtab))
