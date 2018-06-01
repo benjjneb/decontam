@@ -2,6 +2,7 @@
 
 export(isContaminant)
 export(isNotContaminant)
+export(plot_condition)
 export(plot_frequency)
 import(ggplot2)
 importFrom(methods,as)

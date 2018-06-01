@@ -1,8 +1,8 @@
 Package: decontam
 Type: Package
 Title: Identify Contaminants in Marker-gene and Metagenomics Sequencing Data
-Version: 0.99.3
-Date: 2018-03-05
+Version: 1.1.0
+Date: 2018-05-21
 Author: Benjamin Callahan <benjamin.j.callahan@gmail.com>, Nicole Marie Davis
 Maintainer: Benjamin Callahan <benjamin.j.callahan@gmail.com>
 Description: Simple statistical identification of contaminating sequence features in 

@@ -132,3 +132,47 @@ plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showMod
   if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes(y=non.contam), color="black", linetype="dashed")
   p1 + geom_point()
 }
+
+
+#' @import ggplot2
+#'
+#' @export
+#'
+plot_condition <- function(seqtab, condition, conc, batch=NULL, log=FALSE) {
+  # Validate input
+  if(is.character(condition) && length(condition)==1) { cstr <- condition } else { cstr <- "Condition" }
+  if(is.character(batch) && length(batch)==1) { bstr <- batch } else { bstr <- "Batch" }
+  if(is(seqtab, "phyloseq")) {
+    ps <- seqtab
+    seqtab <- as(ps@otu_table, "matrix")
+    if(ps@otu_table@taxa_are_rows) { seqtab <- t(seqtab) }
+    if(is.character(conc) && length(conc)==1) { conc <- getFromPS(ps, conc) }
+    if(is.character(condition) && length(condition)==1) { condition <- getFromPS(ps, condition) }
+    if(is.character(batch) && length(batch)==1) { batch <- getFromPS(ps, batch) }
+  } else {
+    ps <- NULL # No phyloseq object
+  }
+  if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
+  neg <- rep(FALSE, length(conc)) # Don't ignore any samples, unused in this function for now
+  batch <- factor(batch)
+
+  if(is.null(ps)) {
+    plotdf <- cbind(data.frame(seqtab, check.names=FALSE), DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
+  } else {
+    plotdf <- cbind(data.frame(seqtab, check.names=FALSE), as(ps@sam_data, "data.frame"),
+                    DNA_conc=conc, Type=ifelse(neg, "Negative", "Sample"))
+  }
+  plotdf[,"Condition"] <- condition
+  plotdf[,"Batch"] <- batch
+  p <- ggplot(data=plotdf, aes(x=Condition, y=DNA_conc))
+  if(is.numeric(condition)) {
+    p <- p + geom_point()
+  } else {
+    p <- p + geom_boxplot()
+  }
+  if(!is.null(batch)) {
+    p <- p + facet_wrap(~Batch)
+  }
+  if(log) p <- p + scale_y_log10()
+  p + ylab("DNA Concentration") + xlab(cstr)
+}
