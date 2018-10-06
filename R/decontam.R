@@ -39,7 +39,6 @@
 #' If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
 #' phyloseq object can be provided.
 #'
-#'
 #' @param batch.combine (Optional). Default "minimum".
 #' For each input sequence variant (or OTU) the probabilities calculated in each batch are combined into a
 #' single probability that is compared to `code{threshold}` to classify contaminants.
@@ -91,6 +90,14 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL,
     if(is.character(batch) && length(batch)==1) { batch <- getFromPS(ps, batch) }
   }
   if(!(is(seqtab, "matrix") && is.numeric(seqtab))) stop("seqtab must be a numeric matrix.")
+  if(any(rowSums(seqtab) == 0)) { # Catch and remove zero-count samples
+    zero.count <- rowSums(seqtab) == 0
+    seqtab <- seqtab[!zero.count,]
+    if(!is.null(conc)) conc <- conc[!zero.count]
+    if(!is.null(neg)) neg <- neg[!zero.count]
+    if(!is.null(batch)) batch <- batch[!zero.count]
+    warning("Removed ", sum(zero.count), " samples with zero total counts (or frequency).")
+  }
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
   method <- match.arg(method)
   if(method == "auto") {

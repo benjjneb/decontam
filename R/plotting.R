@@ -73,6 +73,13 @@ plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showMod
   } else {
     ps <- NULL # No phyloseq object
   }
+  if(any(rowSums(seqtab) == 0)) { # Catch and remove zero-count samples
+    zero.count <- rowSums(seqtab) == 0
+    seqtab <- seqtab[!zero.count,]
+    conc <- conc[!zero.count]
+    if(!is.null(neg)) neg <- neg[!zero.count]
+    warning("Removed ", sum(zero.count), " samples with zero total counts (or frequency).")
+  }
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
   if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
   if(is.null(neg)) neg <- rep(FALSE, length(conc)) # Don't ignore any samples
@@ -134,9 +141,52 @@ plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showMod
 }
 
 
+#' Plot DNA concentrations as a function of experimental conditions.
+#'
+#' Plots DNA concentration as a function of experimental conditions. This function is intended as a
+#' convenient exploration of potential covariation between DNA concentrations and conditions that
+#' could influence the community composition, as this could lead to higher rates of false-positive
+#' contaminant identifications.
+#'
+#' @param seqtab (Required). \code{Integer matrix} or \code{phyloseq} object.
+#' A feature table recording the observed abundances of each sequence feature (e.g. OTUs or ASVs or
+#' or genus or ortholog or...) in each sample.
+#' Rows should correspond to samples, and columns to sequences (or OTUs).
+#' If a phyloseq object is provided, the otu-table component will be extracted.
+#'
+#' @param condition (Required). \code{numeric} or any type coercible to a \code{factor}. Default NULL.
+#' If provided, should be a vector of length equal to the number of input samples which specifies the
+#' experimental condition of interest for each sample (e.g. pH).
+#' If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
+#' phyloseq object can be provided.
+#'
+#' @param conc (Required). \code{numeric}.
+#' A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
+#' All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
+#' If \code{seqtab} was provided as a \code{phyloseq} object, the name of the sample variable in the
+#' \code{phyloseq} object can be provided.
+#'
+#' @param batch (Optional). \code{factor}, or any type coercible to a \code{factor}. Default NULL.
+#' If provided, should be a vector of length equal to the number of input samples which specifies which batch
+#' each sample belongs to (eg. sequencing run). Contaminants identification will be performed independently
+#' within each batch.
+#' If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
+#' phyloseq object can be provided.
+#'
+#' @param log (Optional). \code{logical}. Default TRUE.
+#' If TRUE, the axes are log10-scaled.
+#'
 #' @import ggplot2
 #'
 #' @export
+#'
+#' @examples
+#' # MUC is a phyloseq object, MUC.conc is the vector of sample concentrations
+#' MUC <- readRDS(system.file("extdata", "MUClite.rds", package="decontam"))
+#' MUC.conc <- readRDS(system.file("extdata", "MUCconc.rds", package="decontam"))
+#' plot_condition(MUC, "Habitat", MUC.conc)
+#' # Plot against random quantitative variable
+#' plot_condition(MUC, runif(nsamples(MUC)), MUC.conc, log=TRUE)
 #'
 plot_condition <- function(seqtab, condition, conc, batch=NULL, log=FALSE) {
   # Validate input
