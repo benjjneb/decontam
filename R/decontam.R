@@ -133,6 +133,10 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL,
     batch <- factor(rep(1, nrow(seqtab)))
   }
   if(nrow(seqtab) != length(batch)) stop("The length of batch must match the number of samples (the rows of seqtab).")
+  # Check for batches with too few samples
+  tab.batch <- table(batch)
+  if(min(tab.batch) <= 1) stop("Some batches contain zero or one samples.")
+  if(min(tab.batch) <= 4) warning("Some batches have very few (<=4) samples.")
   batch.combine <- match.arg(batch.combine)
   batch <- factor(batch)
   # Loop over batches
