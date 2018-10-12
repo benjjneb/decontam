@@ -24,11 +24,13 @@ table(contamdf.freq$contaminant)
 head(which(contamdf.freq$contaminant))
 
 ## ----plot-abundance, warning=FALSE-----------------------------------------
-plot_frequency(ps, taxa_names(ps)[c(1,3)], conc="quant_reading")
+plot_frequency(ps, taxa_names(ps)[c(1,3)], conc="quant_reading") + 
+  xlab("DNA Concentration (PicoGreen fluorescent intensity)")
 
 ## ----see-contams, warning=FALSE--------------------------------------------
 set.seed(100)
-plot_frequency(ps, taxa_names(ps)[sample(which(contamdf.freq$contaminant),3)], conc="quant_reading")
+plot_frequency(ps, taxa_names(ps)[sample(which(contamdf.freq$contaminant),3)], conc="quant_reading") +
+    xlab("DNA Concentration (PicoGreen fluorescent intensity)")
 
 ## ----remove----------------------------------------------------------------
 ps

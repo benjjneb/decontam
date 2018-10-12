@@ -186,7 +186,7 @@ plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showMod
 #' MUC.conc <- readRDS(system.file("extdata", "MUCconc.rds", package="decontam"))
 #' plot_condition(MUC, "Habitat", MUC.conc)
 #' # Plot against random quantitative variable
-#' plot_condition(MUC, runif(nsamples(MUC)), MUC.conc, log=TRUE)
+#' plot_condition(MUC, runif(length(MUC.conc)), MUC.conc, log=TRUE)
 #'
 plot_condition <- function(seqtab, condition, conc, batch=NULL, log=FALSE) {
   # Validate input
