@@ -10,7 +10,7 @@
 #'
 #' @param conc (Optional). \code{numeric}. Required if performing frequency-based testing.
 #' A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
-#' All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
+#' All values must be equal or greater than zero. Zero is assumed to represent the complete absence of DNA.
 #' If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
 #' phyloseq object can be provided.
 #'
@@ -113,7 +113,7 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL,
   }
   if(do.freq) {
     if(missing(conc)) stop("conc must be provided to perform frequency-based contaminant identification.")
-    if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
+    if(!(is.numeric(conc) && all(conc>=0))) stop("conc must be positive numeric.")
     if(nrow(seqtab) != length(conc)) stop("The length of conc must match the number of samples (the rows of seqtab).")
     if(missing(neg)) neg <- rep(FALSE, length(conc)) # Don't ignore any samples
   }
