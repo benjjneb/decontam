@@ -17,7 +17,7 @@ If a phyloseq object is provided, the otu-table component will be extracted.}
 
 \item{conc}{(Optional). \code{numeric}. Required if performing frequency-based testing.
 A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
-All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
+All values must be equal or greater than zero. Zero is assumed to represent the complete absence of DNA.
 If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
 phyloseq object can be provided.}
 
