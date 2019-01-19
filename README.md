@@ -8,7 +8,7 @@ More documentation available through the R help interface (e.g. `?isContaminant`
 
 ## Installation
 
-The decontam R package is currently available as a source package through github, so installation requires the ability to compile R packages. This means that R and the R tool-chain must be installed, which requires the [Xcode comnand-line tools](http://railsapps.github.io/xcode-command-line-tools.html) on Mac and [Rtools](https://cran.r-project.org/bin/windows/Rtools/) on Windows.
+The decontam R package is currently available as a source package through github, so installation requires the ability to compile R packages. This means that R and the R tool-chain must be installed, which requires the [Xcode command-line tools](http://railsapps.github.io/xcode-command-line-tools.html) on Mac and [Rtools](https://cran.r-project.org/bin/windows/Rtools/) on Windows.
 
 The easiest installation method uses the `devtools` package:
 
@@ -20,7 +20,7 @@ devtools::install_github("benjjneb/decontam")
 Alternatively you can install from source by hand. First download the zipped package and unzip it (or expand the tarball). Start a fresh R session, and enter the following.
 
 ```S
-install.packages("path/to/dada2", repos = NULL, type = "source",
+install.packages("path/to/decontam", repos = NULL, type = "source",
                  dependencies = c("Depends", "Suggests","Imports"))
 ```
 
