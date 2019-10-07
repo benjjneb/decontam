@@ -2,7 +2,7 @@
 
 **An [introductory vignette](https://benjjneb.github.io/decontam/vignettes/decontam_intro.html) demonstrating how to use the decontam package to identify contaminants.**
 
-**The [manuscript introducing decontam](https://doi.org/10.1186/s40168-018-0605-2) with benchmarking demonstrating how `decontam`-inating your data removes reagent sequences, improves accuracy, reduces batch effects, and prevents false-positive assocations.**
+**The [manuscript introducing decontam](https://doi.org/10.1186/s40168-018-0605-2) with benchmarking demonstrating how `decontam`-inating your data removes reagent sequences, improves accuracy, reduces batch effects, and prevents false-positive associations.**
 
 More documentation available through the R help interface (e.g. `?isContaminant`) and at [the decontam web site](https://benjjneb.github.io/decontam).
 
