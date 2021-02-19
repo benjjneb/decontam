@@ -1,0 +1,2 @@
+Changes in version 1.11.1 (2021-02-19)
++ switched to S4 method dispatch for isContaminant and isNotContaminant functions

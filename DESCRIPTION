@@ -1,9 +1,15 @@
 Package: decontam
 Type: Package
 Title: Identify Contaminants in Marker-gene and Metagenomics Sequencing Data
-Version: 1.1.2
-Date: 2018-10-08
-Author: Benjamin Callahan <benjamin.j.callahan@gmail.com>, Nicole Marie Davis
+Version: 1.11.1
+Date: 2021-02-19
+Authors@R:
+    c(person(given = "Benjamin", family = "Callahan", role = c("aut","cre"),
+             email = "benjamin.j.callahan@gmail.com"),
+      person(given = "Nicole Marie", family = "Davis", role = "aut"),
+      person(given = "Felix G.M.", family = "Ernst", role = "ctb",
+             email = "felix.gm.ernst@outlook.com",
+             comment = c(ORCID = "0000-0001-5064-0928")))
 Maintainer: Benjamin Callahan <benjamin.j.callahan@gmail.com>
 Description: Simple statistical identification of contaminating sequence features in 
     marker-gene or metagenomics data. Works on any kind of feature derived from 
@@ -28,4 +34,4 @@ biocViews: Microbiome, Sequencing, Classification, Metagenomics
 URL: https://github.com/benjjneb/decontam
 BugReports: https://github.com/benjjneb/decontam/issues
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 7.1.1

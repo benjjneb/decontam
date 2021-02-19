@@ -2,18 +2,31 @@
 % Please edit documentation in R/decontam.R
 \name{isContaminant}
 \alias{isContaminant}
+\alias{isContaminant,ANY-method}
 \title{Identify contaminant sequences.}
 \usage{
-isContaminant(seqtab, conc = NULL, neg = NULL, method = c("auto",
-  "frequency", "prevalence", "combined", "minimum", "either", "both"),
-  batch = NULL, batch.combine = c("minimum", "product", "fisher"),
-  threshold = 0.1, normalize = TRUE, detailed = TRUE)
+isContaminant(seqtab, ...)
+
+\S4method{isContaminant}{ANY}(
+  seqtab,
+  conc = NULL,
+  neg = NULL,
+  method = c("auto", "frequency", "prevalence", "combined", "minimum", "either",
+    "both"),
+  batch = NULL,
+  batch.combine = c("minimum", "product", "fisher"),
+  threshold = 0.1,
+  normalize = TRUE,
+  detailed = TRUE
+)
 }
 \arguments{
 \item{seqtab}{(Required). \code{Integer matrix} or \code{phyloseq} object.
 A feature table recording the observed abundances of each sequence variant (or OTU) in each sample.
 Rows should correspond to samples, and columns to sequences (or OTUs).
 If a phyloseq object is provided, the otu-table component will be extracted.}
+
+\item{...}{Not used currently}
 
 \item{conc}{(Optional). \code{numeric}. Required if performing frequency-based testing.
 A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.

@@ -4,8 +4,16 @@
 \alias{plot_frequency}
 \title{Plot frequencies as a function of input DNA concentration}
 \usage{
-plot_frequency(seqtab, taxa, conc, neg = NULL, normalize = TRUE,
-  showModels = TRUE, log = TRUE, facet = TRUE)
+plot_frequency(
+  seqtab,
+  taxa,
+  conc,
+  neg = NULL,
+  normalize = TRUE,
+  showModels = TRUE,
+  log = TRUE,
+  facet = TRUE
+)
 }
 \arguments{
 \item{seqtab}{(Required). \code{Integer matrix} or \code{phyloseq} object.
