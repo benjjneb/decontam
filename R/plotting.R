@@ -129,14 +129,14 @@ plot_frequency <- function(seqtab, taxa, conc, neg=NULL, normalize=TRUE, showMod
     mod_melt <- do.call(rbind, mod_melts)
   }
 
-  p1 <- ggplot(data=plot_melt, aes(DNA_conc, taxon_abundance)) + xlab("DNA Concentration")
+  p1 <- ggplot(data=plot_melt, aes_string("DNA_conc", "taxon_abundance")) + xlab("DNA Concentration")
   p1 <- p1 + ylab(ifelse(normalize, "Frequency", "Relative Abundance"))
   if(log) p1 <- p1 + scale_x_log10()
   if(log) p1 <- p1 + scale_y_log10(limits=c(NA, ifelse(normalize || all(plot_melt$DNA_conc <= 1), 1, NA)))
-  if(nlevels(factor(neg))>1) p1 <- p1 + aes(color=Type)
+  if(nlevels(factor(neg))>1) p1 <- p1 + aes_string(color="Type")
   if(facet && ntax.plot > 1) p1 <- p1 + facet_wrap(~taxa)
-  if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes(y=contam), color="red", linetype="solid")
-  if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes(y=non.contam), color="black", linetype="dashed")
+  if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes_string(y="contam"), color="red", linetype="solid")
+  if(showModels) p1 <- p1 + geom_line(data=mod_melt, aes_string(y="non.contam"), color="black", linetype="dashed")
   p1 + geom_point()
 }
 
@@ -214,7 +214,7 @@ plot_condition <- function(seqtab, condition, conc, batch=NULL, log=FALSE) {
   }
   plotdf[,"Condition"] <- condition
   plotdf[,"Batch"] <- batch
-  p <- ggplot(data=plotdf, aes(x=Condition, y=DNA_conc))
+  p <- ggplot(data=plotdf, aes_string(x="Condition", y="DNA_conc"))
   if(is.numeric(condition)) {
     p <- p + geom_point()
   } else {
