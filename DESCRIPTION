@@ -1,7 +1,7 @@
 Package: decontam
 Type: Package
 Title: Identify Contaminants in Marker-gene and Metagenomics Sequencing Data
-Version: 1.1.2
+Version: 1.11.0
 Date: 2018-10-08
 Author: Benjamin Callahan <benjamin.j.callahan@gmail.com>, Nicole Marie Davis
 Maintainer: Benjamin Callahan <benjamin.j.callahan@gmail.com>
@@ -24,7 +24,7 @@ Suggests:
 License: Artistic-2.0
 Encoding: UTF-8
 VignetteBuilder: knitr
-biocViews: Microbiome, Sequencing, Classification, Metagenomics
+biocViews: ImmunoOncology, Microbiome, Sequencing, Classification, Metagenomics
 URL: https://github.com/benjjneb/decontam
 BugReports: https://github.com/benjjneb/decontam/issues
 LazyData: true
