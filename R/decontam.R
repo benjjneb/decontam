@@ -57,6 +57,8 @@
 #' If TRUE, the return value is a \code{data.frame} containing diagnostic information on the contaminant decision.
 #' If FALSE, the return value is a \code{logical} vector containing the binary contaminant classifications.
 #'
+#' @param ... Not used currently
+#'
 #' @return
 #' If \code{detailed=TRUE} a \code{data.frame} with classification information.
 #' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
@@ -65,7 +67,7 @@
 #' @importFrom methods is
 #' @importFrom stats pchisq
 #'
-#' @export
+#' @name isContaminant
 #'
 #' @examples
 #' st <- readRDS(system.file("extdata", "st.rds", package="decontam"))
@@ -76,19 +78,65 @@
 #' isContaminant(st, conc=conc, method="frequency", threshold=0.2)
 #' isContaminant(st, conc=conc, neg=neg, method="both", threshold=c(0.1,0.5))
 #'
-isContaminant <- function(seqtab, conc=NULL, neg=NULL,
-                          method=c("auto", "frequency", "prevalence", "combined", "minimum", "either", "both"),
-                          batch=NULL, batch.combine=c("minimum", "product", "fisher"),
-                          threshold = 0.1, normalize=TRUE, detailed=TRUE) {
-  # Validate input
-  if(is(seqtab, "phyloseq")) {
-    ps <- seqtab
-    seqtab <- as(ps@otu_table, "matrix")
-    if(ps@otu_table@taxa_are_rows) { seqtab <- t(seqtab) }
-    if(is.character(conc) && length(conc)==1) { conc <- getFromPS(ps, conc) }
-    if(is.character(neg) && length(neg)==1) { neg <- getFromPS(ps, neg) }
-    if(is.character(batch) && length(batch)==1) { batch <- getFromPS(ps, batch) }
+NULL
+
+#' @rdname isContaminant
+#' @export
+setGeneric("isContaminant", signature = c("seqtab"),
+           function(seqtab, ...)
+             standardGeneric("isContaminant"))
+
+#' @rdname isContaminant
+#' @export
+setMethod("isContaminant", signature = c(seqtab = "ANY"),
+  function(seqtab,
+           conc = NULL,
+           neg = NULL,
+           method = c("auto", "frequency", "prevalence", "combined", "minimum", "either", "both"),
+           batch = NULL,
+           batch.combine = c("minimum", "product", "fisher"),
+           threshold = 0.1,
+           normalize = TRUE,
+           detailed = TRUE){
+    if(is(seqtab, "phyloseq")) {
+      ps <- seqtab
+      seqtab <- as(ps@otu_table, "matrix")
+      if(ps@otu_table@taxa_are_rows) { seqtab <- t(seqtab) }
+      if(is.character(conc) && length(conc)==1) { conc <- getFromPS(ps, conc) }
+      if(is.character(neg) && length(neg)==1) { neg <- getFromPS(ps, neg) }
+      if(is.character(batch) && length(batch)==1) { batch <- getFromPS(ps, batch) }
+      isContaminant(seqtab,
+                    conc = conc,
+                    neg = neg,
+                    method = method,
+                    batch = batch,
+                    batch.combine = batch.combine,
+                    threshold = threshold,
+                    normalize = normalize,
+                    detailed = detailed)
+    }
+    .is_contaminant(seqtab,
+                    conc = conc,
+                    neg = neg,
+                    method = method,
+                    batch = batch,
+                    batch.combine = batch.combine,
+                    threshold = threshold,
+                    normalize = normalize,
+                    detailed = detailed)
   }
+)
+
+.is_contaminant <- function(seqtab,
+                            conc = NULL,
+                            neg = NULL,
+                            method = c("auto", "frequency", "prevalence", "combined", "minimum", "either", "both"),
+                            batch = NULL,
+                            batch.combine = c("minimum", "product", "fisher"),
+                            threshold = 0.1,
+                            normalize = TRUE,
+                            detailed = TRUE){
+  # Validate input
   if(!(is(seqtab, "matrix") && is.numeric(seqtab))) stop("seqtab must be a numeric matrix.")
   if(any(rowSums(seqtab) == 0)) { # Catch and remove zero-count samples
     zero.count <- rowSums(seqtab) == 0
@@ -101,21 +149,21 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL,
   if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
   method <- match.arg(method)
   if(method == "auto") {
-    if(!missing(conc) && missing(neg)) method <- "frequency"
-    else if(missing(conc) && !missing(neg)) method <- "prevalence"
+    if(!is.null(conc) && is.null(neg)) method <- "frequency"
+    else if(is.null(conc) && !is.null(neg)) method <- "prevalence"
     else method <- "combined"
   }
   do.freq <- FALSE; do.prev <- FALSE; p.freq <- NA; p.prev <- NA
   if(method %in% c("frequency", "minimum", "combined", "minimum", "either", "both")) do.freq <- TRUE
   if(method %in% c("prevalence", "combined", "minimum", "either", "both")) do.prev <- TRUE
   if(do.prev) {
-    if(missing(neg)) stop("neg must be provided to perform prevalence-based contaminant identification.")
+    if(is.null(neg)) stop("neg must be provided to perform prevalence-based contaminant identification.")
   }
   if(do.freq) {
-    if(missing(conc)) stop("conc must be provided to perform frequency-based contaminant identification.")
+    if(is.null(conc)) stop("conc must be provided to perform frequency-based contaminant identification.")
     if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
     if(nrow(seqtab) != length(conc)) stop("The length of conc must match the number of samples (the rows of seqtab).")
-    if(missing(neg)) neg <- rep(FALSE, length(conc)) # Don't ignore any samples
+    if(is.null(neg)) neg <- rep(FALSE, length(conc)) # Don't ignore any samples
   }
   if(is.numeric(threshold) && all(threshold >= 0) && all(threshold <= 1)) {
     if(method %in% c("either", "both")) {
@@ -129,7 +177,7 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL,
   } else {
     stop("threshold must be a numeric value from 0 to 1 (inclusive).")
   }
-  if(missing(batch) || is.null(batch)) {
+  if(is.null(batch)) {
     batch <- factor(rep(1, nrow(seqtab)))
   }
   if(nrow(seqtab) != length(batch)) stop("The length of batch must match the number of samples (the rows of seqtab).")
@@ -205,6 +253,8 @@ isContaminant <- function(seqtab, conc=NULL, neg=NULL,
   }
   return(rval)
 }
+
+
 #' @importFrom stats lm
 #' @importFrom stats pf
 #'
@@ -294,18 +344,51 @@ isContaminantPrevalence <- function(freq, neg, method="auto") {
 #' If TRUE, the return value is a \code{data.frame} containing diagnostic information on the non-contaminant decision.
 #' If FALSE, the return value is a \code{logical} vector containing the non-contaminant decisions.
 #'
+#' @param ... Not used currently
+#'
 #' @return
 #' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating non-contaminants.
 #' If \code{detailed=TRUE} a \code{data.frame} is returned instead.
 #'
+#' @name isNotContaminant
 #' @export
 #'
 #' @examples
 #' st <- readRDS(system.file("extdata", "st.rds", package="decontam"))
 #' samdf <- readRDS(system.file("extdata", "samdf.rds", package="decontam"))
 #' isNotContaminant(st, samdf$quant_reading, threshold=0.05)
-#'
-isNotContaminant <- function(seqtab, neg=NULL, method="prevalence", threshold = 0.5, normalize=TRUE, detailed=FALSE) {
+NULL
+
+#' @rdname isNotContaminant
+#' @export
+setGeneric("isNotContaminant", signature = c("seqtab"),
+           function(seqtab, ...)
+             standardGeneric("isNotContaminant"))
+
+#' @rdname isNotContaminant
+#' @export
+setMethod("isNotContaminant", signature = c(seqtab = "ANY"),
+  function(seqtab,
+           neg = NULL,
+           method = "prevalence",
+           threshold = 0.5,
+           normalize = TRUE,
+           detailed = FALSE){
+    .is_not_contaminant(seqtab,
+                        neg = neg,
+                        method = method,
+                        threshold = threshold,
+                        normalize = normalize,
+                        detailed = detailed)
+  }
+)
+
+.is_not_contaminant <- function(seqtab,
+                                neg = NULL,
+                                method = "prevalence",
+                                threshold = 0.5,
+                                normalize = TRUE,
+                                detailed = FALSE) {
   if(!method %in% c("prevalence")) stop("isNotContaminant only supports the following methods: prevalence")
   df <- isContaminant(seqtab, conc=NULL, neg=neg, method=method, threshold=threshold, normalize=normalize, detailed=TRUE)
   df$p.freq <- 1-df$p.freq

@@ -2,15 +2,26 @@
 % Please edit documentation in R/decontam.R
 \name{isNotContaminant}
 \alias{isNotContaminant}
+\alias{isNotContaminant,ANY-method}
 \title{Identify non-contaminant sequences.}
 \usage{
-isNotContaminant(seqtab, neg = NULL, method = "prevalence",
-  threshold = 0.5, normalize = TRUE, detailed = FALSE)
+isNotContaminant(seqtab, ...)
+
+\S4method{isNotContaminant}{ANY}(
+  seqtab,
+  neg = NULL,
+  method = "prevalence",
+  threshold = 0.5,
+  normalize = TRUE,
+  detailed = FALSE
+)
 }
 \arguments{
 \item{seqtab}{(Required). Integer matrix.
 A feature table recording the observed abundances of each sequence (or OTU) in each sample.
 Rows should correspond to samples, and columns to sequences (or OTUs).}
+
+\item{...}{Not used currently}
 
 \item{neg}{(Required). \code{logical}
 The negative control samples. Extraction controls give the best results.}
@@ -45,5 +56,4 @@ in which a large proportion of the sequences are likely to be contaminants.
 st <- readRDS(system.file("extdata", "st.rds", package="decontam"))
 samdf <- readRDS(system.file("extdata", "samdf.rds", package="decontam"))
 isNotContaminant(st, samdf$quant_reading, threshold=0.05)
-
 }
