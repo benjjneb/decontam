@@ -127,8 +127,6 @@ setMethod("isContaminant", signature = c(seqtab = "ANY"),
   }
 )
 
-
-
 .is_contaminant <- function(seqtab,
                             conc = NULL,
                             neg = NULL,
